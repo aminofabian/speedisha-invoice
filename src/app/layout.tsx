@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/navbar";
 import { Jost, Commissioner, Orbitron } from 'next/font/google';
+import { Providers } from "@/components/providers";
 
 const jost = Jost({
   subsets: ["latin"],
@@ -9,13 +10,15 @@ const jost = Jost({
 });
 
 const commissioner = Commissioner({
-  subsets: ["latin"],
+  subsets: ['latin'],
   variable: '--font-commissioner',
+  display: 'swap',
 });
 
 const orbitron = Orbitron({
-  subsets: ["latin"],
+  subsets: ['latin'],
   variable: '--font-orbitron',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -31,10 +34,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${jost.className} ${commissioner.variable} ${orbitron.variable} antialiased text-slate-700`}>
-        <Navbar />
-        <main className="pt-16">
-          {children}
-        </main>
+        <Providers>
+          <Navbar />
+          <main className="pt-16">
+            {children}
+          </main>
+        </Providers>
       </body>
     </html>
   );

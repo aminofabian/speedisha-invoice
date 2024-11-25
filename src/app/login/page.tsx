@@ -1,17 +1,17 @@
-
 import OverlappingInput from '@/components/originui/overlapping-input';
-import { Button } from '@/components/ui/button';
 import Logo from '@/components/logo';
-import { signIn } from '@/utils/auth';
+import { auth, signIn } from '@/utils/auth';
+import SubmitButton from '@/components/custom-components/submit-button';
+import { Mail } from 'lucide-react';
+import { redirect } from 'next/navigation';
 
-function LoginPage() {
+async function LoginPage() {
+    const session =  await auth();
+    if (session?.user) {
+        redirect('/dashboard')
 
-    // const handleSubmit = (e: React.FormEvent) => {
-    //     e.preventDefault();
-    //     // Handle login logic here
-    //     console.log('Login attempt with:', { email });
-    // };
 
+    }
     return (
         <div className="min-h-screen flex items-center justify-center bg-background">
             <div className="w-full max-w-md space-y-8 p-8 bg-card rounded-lg shadow-lg">
@@ -25,18 +25,18 @@ function LoginPage() {
                     </p>
                 </div>
 
-                <form className="mt-8 space-y-6"  action={async () => {
-        "use server"
-        await signIn()
-      }}>
+                <form className="mt-8 space-y-6" action={async (formData) => {
+                    "use server"
+                    await signIn("nodemailer", formData)
+                }}>
                     <div className="space-y-4">
-                        <OverlappingInput
-                        />
+                        <OverlappingInput />
                     </div>
 
-                    <Button type="submit" className="w-full">
+                    <SubmitButton>
+                        <Mail className="w-4 h-4" />
                         Continue with Email
-                    </Button>
+                    </SubmitButton>
 
                     <p className="mt-2 text-center text-sm text-muted-foreground">
                         Don't have an account?{' '}

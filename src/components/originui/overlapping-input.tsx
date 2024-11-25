@@ -19,6 +19,7 @@ export default function OverlappingInput({ value, onChange }: OverlappingInputPr
         className="h-10"
         placeholder="Enter your email address"
         type="email"
+        name='email'
         value={value}
         onChange={onChange}
         required
