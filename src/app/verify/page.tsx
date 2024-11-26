@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,7 @@ import { Mail, ArrowLeft, Loader2, AlertCircle, CheckCircle } from 'lucide-react
 import { signIn } from 'next-auth/react';
 import { useToast } from "@/components/ui/use-toast";
 
-export default function VerifyRequest() {
+function VerifyRequestContent() {
   const [timeLeft, setTimeLeft] = useState(60);
   const [isResending, setIsResending] = useState(false);
   const searchParams = useSearchParams();
@@ -153,5 +153,18 @@ export default function VerifyRequest() {
         </p>
       </motion.div>
     </div>
+  );
+}
+
+// Wrap the component with Suspense
+export default function VerifyRequest() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    }>
+      <VerifyRequestContent />
+    </Suspense>
   );
 }
