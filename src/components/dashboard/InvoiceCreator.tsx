@@ -219,7 +219,7 @@ export function InvoiceCreator() {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 gap-8">
         {/* Left Column - Form */}
         <div className="space-y-8">
           <div className="space-y-4">
