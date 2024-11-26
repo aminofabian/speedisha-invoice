@@ -32,8 +32,11 @@ async function LoginPage() {
                     
                     await signIn("email", {
                         email,
-                        callbackUrl: "/dashboard"
+                        callbackUrl: "/dashboard",
+                        redirect: false
                     });
+                    
+                    redirect("/verify-request");
                 }}>
                     <div className="space-y-4">
                         <OverlappingInput

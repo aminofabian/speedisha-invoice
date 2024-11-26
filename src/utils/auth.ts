@@ -5,7 +5,7 @@ import nodemailer from "nodemailer";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "./db";
 import type { Provider } from "next-auth/providers";
-import { getEmailTemplate } from '@/lib/email-template';
+import { EmailTemplate } from '@/lib/email-template';
 
 declare module "next-auth" {
   interface Session extends DefaultSession {
@@ -34,7 +34,7 @@ const sendVerificationRequest = async ({ identifier: email, url }: { identifier:
       from: process.env.EMAIL_USER,
       to: email,
       subject: "Sign in to Speedisha",
-      html: getEmailTemplate(url),
+      html: EmailTemplate({ verificationUrl: url }),
     });
 
     console.log('Email sent successfully:', result.messageId);
@@ -86,9 +86,9 @@ export const config = {
     async redirect({ url, baseUrl }) {
       console.log('Redirect callback:', { url, baseUrl });
       
-      // Always redirect to dashboard after successful email verification
+      // After email verification, redirect to dashboard
       if (url.includes('/api/auth/callback/email')) {
-        return '/dashboard';
+        return `${baseUrl}/dashboard`;
       }
       
       // Keep user on verify request page
@@ -96,12 +96,15 @@ export const config = {
         return url;
       }
       
-      // Default redirect behavior
-      if (url.startsWith('/')) {
-        return `${baseUrl}${url}`;
+      // Handle dashboard redirect
+      if (url.includes('/dashboard')) {
+        return `${baseUrl}/dashboard`;
       }
       
-      return url.startsWith(baseUrl) ? url : baseUrl;
+      // Default redirect behavior
+      if (url.startsWith(baseUrl)) return url;
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      return baseUrl;
     },
   },
   events: {

@@ -124,61 +124,119 @@ function SidebarContent({ routes, pathname, className, setIsOpen }: SidebarConte
   const { data: session } = useSession();
 
   return (
-    <div className={cn('pb-12 h-full flex flex-col', className)}>
-      <div className="space-y-4 py-4 flex flex-col h-full">
-        <div className="px-3 py-2">
-          <Link href="/">
-            <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
-              Speedisha
-            </h2>
-          </Link>
+    <div className={cn('pb-6 h-full flex flex-col', className)}>
+      {/* User Profile Header */}
+      <div className="flex items-center px-4 border-b">
+        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-primary/20">
+          <div className="h-6 w-6 rounded-full bg-primary/20" />
+        </div>
+        <div className="flex flex-col min-w-0">
+          <span className="text-sm font-semibold truncate">
+            {session?.user?.name || 'User'}
+          </span>
+          <span className="text-xs text-muted-foreground truncate">
+            {session?.user?.email || 'user@example.com'}
+          </span>
+        </div>
+      </div>
+
+      <ScrollArea className="flex-1 py-6">
+        <div className="space-y-4 px-3">
+          {/* Navigation Section */}
           <div className="space-y-1">
-            {routes.map((route) => (
+            <h2 className="text-xs uppercase text-muted-foreground font-semibold px-4 mb-2">
+              Navigation
+            </h2>
+            {routes.slice(0, 3).map((route) => (
               <Link
                 key={route.href}
                 href={route.href}
                 onClick={() => setIsOpen?.(false)}
                 className={cn(
-                  'text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:text-primary hover:bg-primary/10 rounded-lg transition',
-                  pathname === route.href ? 'text-primary bg-primary/10' : 'text-muted-foreground',
+                  'group flex items-center gap-x-3 px-4 py-2.5 text-sm font-medium rounded-lg transition',
+                  pathname === route.href 
+                    ? 'bg-primary/10 text-primary hover:bg-primary/15' 
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                 )}
               >
-                <div className="flex items-center flex-1">
-                  <route.icon className={cn('h-4 w-4 mr-3', route.color)} />
-                  {route.label}
-                </div>
+                <route.icon className={cn('flex-shrink-0 h-4 w-4', route.color)} />
+                {route.label}
+              </Link>
+            ))}
+          </div>
+
+          {/* Management Section */}
+          <div className="space-y-1">
+            <h2 className="text-xs uppercase text-muted-foreground font-semibold px-4 mb-2">
+              Management
+            </h2>
+            {routes.slice(3, 6).map((route) => (
+              <Link
+                key={route.href}
+                href={route.href}
+                onClick={() => setIsOpen?.(false)}
+                className={cn(
+                  'group flex items-center gap-x-3 px-4 py-2.5 text-sm font-medium rounded-lg transition',
+                  pathname === route.href 
+                    ? 'bg-primary/10 text-primary hover:bg-primary/15' 
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                )}
+              >
+                <route.icon className={cn('flex-shrink-0 h-4 w-4', route.color)} />
+                {route.label}
+              </Link>
+            ))}
+          </div>
+
+          {/* Settings Section */}
+          <div className="space-y-1">
+            <h2 className="text-xs uppercase text-muted-foreground font-semibold px-4 mb-2">
+              Settings
+            </h2>
+            {routes.slice(6).map((route) => (
+              <Link
+                key={route.href}
+                href={route.href}
+                onClick={() => setIsOpen?.(false)}
+                className={cn(
+                  'group flex items-center gap-x-3 px-4 py-2.5 text-sm font-medium rounded-lg transition',
+                  pathname === route.href 
+                    ? 'bg-primary/10 text-primary hover:bg-primary/15' 
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                )}
+              >
+                <route.icon className={cn('flex-shrink-0 h-4 w-4', route.color)} />
+                {route.label}
               </Link>
             ))}
           </div>
         </div>
-        <div className="mt-auto px-3 py-2">
-          <div className="space-y-1">
-            {/* User Profile */}
-            <div className="px-3 py-2">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="rounded-full bg-primary/10 p-1">
-                  <div className="h-6 w-6 rounded-full bg-primary/20" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium">
-                    {session?.user?.name || 'User'}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {session?.user?.email || 'user@example.com'}
-                  </span>
-                </div>
-              </div>
+      </ScrollArea>
+
+      {/* User Profile and Logout */}
+      <div className="border-t pt-4 px-3">
+        <div className="px-4 py-3 rounded-lg bg-muted/50">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <div className="h-6 w-6 rounded-full bg-primary/20" />
             </div>
-            {/* Logout Button */}
-            <Button
-              variant="ghost"
-              className="w-full justify-start"
-              onClick={() => signOut()}
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              Log out
-            </Button>
+            <div className="flex flex-col">
+              <span className="text-sm font-medium">
+                {session?.user?.name || 'User'}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {session?.user?.email || 'user@example.com'}
+              </span>
+            </div>
           </div>
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-muted-foreground hover:text-foreground"
+            onClick={() => signOut()}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Log out
+          </Button>
         </div>
       </div>
     </div>
