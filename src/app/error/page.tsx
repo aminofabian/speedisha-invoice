@@ -5,17 +5,24 @@ import Link from 'next/link';
 import { XCircle } from 'lucide-react';
 
 export default function ErrorPage() {
-    const searchParams = useSearchParams();
-    const error = searchParams.get('error');
-
-    const errorMessages: { [key: string]: string } = {
-        Configuration: 'There is a problem with the server configuration.',
-        AccessDenied: 'You do not have permission to sign in.',
-        Verification: 'The verification link has expired or has already been used.',
-        Default: 'An unexpected error occurred.',
-    };
-
-    const message = error ? errorMessages[error] || errorMessages.Default : errorMessages.Default;
+    // Handle search params safely for static rendering
+    let errorMessage = 'An unexpected error occurred.';
+    
+    try {
+        const searchParams = useSearchParams();
+        const error = searchParams?.get('error');
+        
+        if (error) {
+            const errorMessages: { [key: string]: string } = {
+                Configuration: 'There is a problem with the server configuration.',
+                AccessDenied: 'You do not have permission to sign in.',
+                Verification: 'The verification link has expired or has already been used.',
+            };
+            errorMessage = errorMessages[error] || errorMessage;
+        }
+    } catch (e) {
+        console.error('Error parsing search params:', e);
+    }
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-background">
@@ -30,7 +37,7 @@ export default function ErrorPage() {
                     </h2>
 
                     <p className="text-center text-muted-foreground">
-                        {message}
+                        {errorMessage}
                     </p>
 
                     <div className="flex flex-col gap-2 w-full">
