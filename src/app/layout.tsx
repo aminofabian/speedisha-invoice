@@ -3,6 +3,7 @@ import "./globals.css";
 import Navbar from "@/components/navbar";
 import { Jost, Commissioner, Orbitron } from 'next/font/google';
 import { Providers } from "@/components/providers";
+import { Toaster } from "@/components/ui/toaster";
 
 const jost = Jost({
   subsets: ["latin"],
@@ -39,6 +40,7 @@ export default function RootLayout({
           <main className="pt-16">
             {children}
           </main>
+          <Toaster />
         </Providers>
       </body>
     </html>

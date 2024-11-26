@@ -5,12 +5,16 @@ import { motion } from 'framer-motion';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Mail, ArrowLeft, Loader2 } from 'lucide-react';
+import { Mail, ArrowLeft, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { signIn } from 'next-auth/react';
+import { useToast } from "@/components/ui/use-toast";
 
 export default function VerifyRequest() {
   const [timeLeft, setTimeLeft] = useState(60);
+  const [isResending, setIsResending] = useState(false);
   const searchParams = useSearchParams();
   const email = searchParams.get('email');
+  const { toast } = useToast();
 
   useEffect(() => {
     if (timeLeft === 0) return;
@@ -21,6 +25,38 @@ export default function VerifyRequest() {
 
     return () => clearInterval(timer);
   }, [timeLeft]);
+
+  const handleResend = async () => {
+    if (!email || isResending || timeLeft > 0) return;
+
+    try {
+      setIsResending(true);
+      const result = await signIn('email', {
+        email,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        throw new Error(result.error);
+      }
+
+      // Reset timer and show success message
+      setTimeLeft(60);
+      toast({
+        title: "Email Sent",
+        description: "Verification email has been resent successfully.",
+        variant: "default",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to resend verification email. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsResending(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-secondary/5">
@@ -65,20 +101,39 @@ export default function VerifyRequest() {
               )}
             </p>
 
-            {/* Timer */}
+            {/* Timer and Resend Button */}
             <div className="flex justify-center mb-6">
-              <div className="bg-primary/5 rounded-full px-4 py-2 text-sm">
+              <motion.div 
+                className="bg-primary/5 rounded-full px-4 py-2"
+                whileHover={timeLeft === 0 ? { scale: 1.02 } : {}}
+                whileTap={timeLeft === 0 ? { scale: 0.98 } : {}}
+              >
                 {timeLeft > 0 ? (
-                  <span className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Resend available in {timeLeft}s
-                  </span>
+                    <span>Resend available in {timeLeft}s</span>
+                  </div>
+                ) : isResending ? (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    disabled 
+                    className="text-primary"
+                  >
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    Resending...
+                  </Button>
                 ) : (
-                  <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
-                    Resend email
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleResend}
+                    className="text-primary hover:text-primary/80 hover:bg-primary/10 transition-all duration-200"
+                  >
+                    Resend verification email
                   </Button>
                 )}
-              </div>
+              </motion.div>
             </div>
 
             {/* Back Link */}

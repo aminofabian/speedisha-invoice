@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Receipt, Coins, Clock, Repeat, FileSpreadsheet } from 'lucide-react';
+import { ArrowRight, Receipt, Coins, Clock, Repeat, FileSpreadsheet, Star, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 
@@ -10,7 +10,7 @@ export default function HeroSection() {
   const { data: session } = useSession();
 
   return (
-    <div className="relative overflow-hidden">
+    <div className="relative">
       {/* Background gradient */}
       <div className="absolute inset-0" />
 
@@ -23,9 +23,8 @@ export default function HeroSection() {
             transition={{ duration: 0.5 }}
             className="inline-flex items-center gap-x-2 rounded-full bg-primary/10 px-4 py-1 mb-8"
           >
-            <span className="text-sm font-medium text-primary">New feature</span>
-            <span className="h-4 w-px bg-primary/20" />
-            <span className="text-sm text-primary">Recurring invoices are here</span>
+            <Star className="w-4 h-4 text-primary fill-primary" />
+            <span className="text-sm font-medium text-primary">Trusted by 10,000+ businesses</span>
           </motion.div>
 
           {/* Main heading */}
@@ -88,8 +87,9 @@ export default function HeroSection() {
             {!session ? (
               <>
                 <Link href="/register">
-                  <Button size="lg" className="gap-2">
-                    Start Free Trial <ArrowRight className="h-4 w-4" />
+                  <Button size="lg" className="gap-2 relative group">
+                    <span className="absolute -inset-0.5 bg-gradient-to-r from-primary to-primary/80 rounded-lg blur opacity-20 group-hover:opacity-30 transition duration-200" />
+                    Start Free Trial <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
                   </Button>
                 </Link>
                 <Link href="/login">
@@ -105,6 +105,27 @@ export default function HeroSection() {
                 </Button>
               </Link>
             )}
+          </motion.div>
+
+          {/* Trust indicators */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="mt-8 flex items-center gap-4 text-sm text-muted-foreground"
+          >
+            <div className="flex items-center gap-1">
+              <Shield className="w-4 h-4" />
+              <span>SSL Secured</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Star className="w-4 h-4" />
+              <span>4.9/5 Rating</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Clock className="w-4 h-4" />
+              <span>100% Free</span>
+            </div>
           </motion.div>
         </div>
 
