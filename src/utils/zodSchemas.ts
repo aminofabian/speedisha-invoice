@@ -17,6 +17,7 @@ export const onboardingFormSchema = z.object({
   city: z.string().min(2, "City must be at least 2 characters"),
   state: z.string().min(2, "State must be at least 2 characters"),
   zipCode: z.string().regex(/^\d{5}(-\d{4})?$/, "Invalid ZIP code"),
+  website: z.string().url("Invalid website URL").optional(),
   logo: z.instanceof(File).optional(),
   logoPreview: z.string().optional(),
   colorScheme: colorSchemeSchema,
