@@ -15,7 +15,7 @@ interface InvoiceStyleSelectorProps {
 export function InvoiceStyleSelector({ value, onChange }: InvoiceStyleSelectorProps) {
   return (
     <Card className="p-4">
-      <h3 className="text-lg font-semibold mb-4">Invoice Style</h3>
+      <h3 className="flex items-center text-lg font-semibold mb-4">Invoice Style</h3>
       <RadioGroup
         value={value}
         onValueChange={(val) => onChange(val as InvoiceStyle)}

@@ -33,29 +33,36 @@ export interface ItemField {
 }
 
 interface InvoiceItem {
-  id?: string
-  [key: string]: any
+  id: string;
+  description?: string;
+  quantity?: number;
+  price?: number;
+  amount?: number;
+  [key: string]: any;
 }
 
 interface InvoiceData {
-  invoiceNumber: string
-  date: string
-  dueDate: string
+  invoiceNumber: string;
+  date: string;
+  dueDate: string;
+  companyName: string;
+  companyLogo: string | null;
   billTo: {
-    name: string
-    address: string
-    email: string
-  }
-  items: InvoiceItem[]
-  notes: string
-  currency: CountryData['currency']
-  companyName: string
-  companyLogo: string | null
+    name: string;
+    address: string;
+    email: string;
+  };
+  items: InvoiceItem[];
+  notes: string;
+  currency: {
+    code: string;
+    symbol: string;
+  };
   colorScheme: {
-    primary: string
-    secondary: string
-    accent: string
-  }
+    primary: string;
+    secondary: string;
+    accent: string;
+  };
 }
 
 const defaultFields: ItemField[] = [
@@ -68,16 +75,17 @@ const defaultFields: ItemField[] = [
 
 const initialInvoiceData: InvoiceData = {
   invoiceNumber: '',
-  date: new Date().toISOString().split('T')[0],
+  date: '',
   dueDate: '',
+  companyName: 'Your Company',
+  companyLogo: null,
   billTo: {
     name: '',
     address: '',
     email: ''
   },
   items: [{
-    id: '1',
-    name: '',
+    id: crypto.randomUUID(),
     description: '',
     quantity: 1,
     price: 0,
@@ -85,10 +93,8 @@ const initialInvoiceData: InvoiceData = {
   }],
   notes: '',
   currency: defaultCountry.currency,
-  companyName: '',
-  companyLogo: null,
   colorScheme: {
-    primary: '#518b03',
+    primary: '#164e63',
     secondary: '#3d6802',
     accent: '#7ab61d'
   }
@@ -116,21 +122,17 @@ export function InvoiceCreator() {
   }
 
   const addItem = () => {
-    const newItem: InvoiceItem = {
-      id: Date.now().toString(),
-    }
-    fields.forEach(field => {
-      newItem[field.name] = field.type === 'number' ? 0 : ''
-    })
-    newItem.quantity = 1
-    newItem.price = 0
-    newItem.amount = 0
-
     setInvoiceData(prev => ({
       ...prev,
-      items: [...prev.items, newItem]
-    }))
-  }
+      items: [...prev.items, {
+        id: crypto.randomUUID(),
+        description: '',
+        quantity: 1,
+        price: 0,
+        amount: 0
+      }]
+    }));
+  };
 
   const removeItem = (index: number) => {
     setInvoiceData(prev => ({
@@ -190,14 +192,11 @@ export function InvoiceCreator() {
   }
 
   const handleLogoUpload = async (file: File) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setInvoiceData(prev => ({
-        ...prev,
-        companyLogo: reader.result as string
-      }));
-    };
-    reader.readAsDataURL(file);
+    const url = URL.createObjectURL(file);
+    setInvoiceData(prev => ({
+      ...prev,
+      companyLogo: url
+    }));
   };
 
   const handleLogoRemove = () => {
@@ -218,35 +217,22 @@ export function InvoiceCreator() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <div className="grid grid-cols-1 gap-8">
-        {/* Left Column - Form */}
-        <div className="space-y-8">
-          <div className="space-y-4">
-            {/* Style Selector */}
+    <div className="max-w-[1600px] mx-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-[2fr,1fr] gap-6">
+        {/* Form Column */}
+        <div className="space-y-4">
+          {/* Top Controls */}
+          <div className="flex flex-wrap gap-3 items-start">
             <InvoiceStyleSelector
               value={invoiceStyle}
               onChange={setInvoiceStyle}
             />
-
-            {/* Branding Settings */}
-            <InvoiceBrandingSettings
-              logo={invoiceData.companyLogo}
-              onLogoUpload={handleLogoUpload}
-              onLogoRemove={handleLogoRemove}
-              colorScheme={invoiceData.colorScheme}
-              onColorChange={handleColorChange}
-              companyName={invoiceData.companyName}
-              onCompanyNameChange={(name) => setInvoiceData(prev => ({ ...prev, companyName: name }))}
-            />
-
-            {/* Invoice Details */}
-            <div className="mb-6 flex justify-end gap-2">
+            <div className="flex gap-2 ml-auto">
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="outline">
+                  <Button variant="outline" size="sm">
                     <Plus className="h-4 w-4 mr-2" />
-                    Add Custom Field
+                    Add Field
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
@@ -296,9 +282,9 @@ export function InvoiceCreator() {
               </Dialog>
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="outline">
+                  <Button variant="outline" size="sm">
                     <Settings2 className="h-4 w-4 mr-2" />
-                    Customize Fields
+                    Fields
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
@@ -341,191 +327,200 @@ export function InvoiceCreator() {
                 </DialogContent>
               </Dialog>
             </div>
-            
-            {/* Invoice Form */}
-            <Card className="p-6">
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900">INVOICE</h1>
-                  <div className="mt-4 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Label className="w-32">Invoice Number:</Label>
-                      <Input
-                        value={invoiceData.invoiceNumber}
-                        onChange={(e) => setInvoiceData(prev => ({ ...prev, invoiceNumber: e.target.value }))}
-                        placeholder="#INV-001"
-                        className="max-w-[200px]"
-                      />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Label className="w-32">Currency:</Label>
-                      <select
-                        value={invoiceData.currency.code}
-                        onChange={(e) => {
-                          const selectedCountry = countriesData.find(c => c.currency.code === e.target.value) || defaultCountry;
-                          setInvoiceData(prev => ({
-                            ...prev,
-                            currency: selectedCountry.currency
-                          }));
-                        }}
-                        className="flex h-9 w-full max-w-[200px] rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        {countriesData.map((country) => (
-                          <option key={country.currency.code} value={country.currency.code}>
-                            {country.name} ({country.currency.code} - {country.currency.symbol})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Label className="w-32">Date:</Label>
-                      <Input
-                        type="date"
-                        value={invoiceData.date}
-                        onChange={(e) => setInvoiceData(prev => ({ ...prev, date: e.target.value }))}
-                        className="max-w-[200px]"
-                      />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Label className="w-32">Due Date:</Label>
-                      <Input
-                        type="date"
-                        value={invoiceData.dueDate}
-                        onChange={(e) => setInvoiceData(prev => ({ ...prev, dueDate: e.target.value }))}
-                        className="max-w-[200px]"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <h2 className="text-xl font-semibold mb-2">{invoiceData.companyName}</h2>
-                  <p className="text-sm text-gray-600">
-                    123 Business Street<br />
-                    City, State 12345<br />
-                    contact@company.com
-                  </p>
-                </div>
+          </div>
+
+          {/* Main Form */}
+          <Card className="p-4">
+            {/* Quick Info Row */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+              <div>
+                <Label>Invoice #</Label>
+                <Input
+                  value={invoiceData.invoiceNumber}
+                  onChange={(e) => setInvoiceData(prev => ({ ...prev, invoiceNumber: e.target.value }))}
+                  placeholder="#INV-001"
+                />
               </div>
-
-              {/* Bill To Section */}
-              <div className="mb-8">
-                <h3 className="text-lg font-semibold mb-4">Bill To</h3>
-                <div className="space-y-4">
-                  <div>
-                    <Label>Name</Label>
-                    <Input
-                      value={invoiceData.billTo.name}
-                      onChange={(e) => updateBillTo('name', e.target.value)}
-                      placeholder="Client's Name"
-                    />
-                  </div>
-                  <div>
-                    <Label>Address</Label>
-                    <Input
-                      value={invoiceData.billTo.address}
-                      onChange={(e) => updateBillTo('address', e.target.value)}
-                      placeholder="Client's Address"
-                    />
-                  </div>
-                  <div>
-                    <Label>Email</Label>
-                    <Input
-                      type="email"
-                      value={invoiceData.billTo.email}
-                      onChange={(e) => updateBillTo('email', e.target.value)}
-                      placeholder="client@example.com"
-                    />
-                  </div>
-                </div>
+              <div>
+                <Label>Date</Label>
+                <Input
+                  type="date"
+                  value={invoiceData.date}
+                  onChange={(e) => setInvoiceData(prev => ({ ...prev, date: e.target.value }))}
+                />
               </div>
-
-              <Separator className="my-8" />
-
-              {/* Items Table */}
-              <div className="mb-8">
-                <div className="grid gap-4 mb-4 font-semibold text-sm"
-                     style={{ gridTemplateColumns: `${fields.filter(f => f.enabled).map(f => `${f.width}fr`).join(' ')} 1fr` }}>
-                  {fields.filter(f => f.enabled).map(field => (
-                    <div key={field.id} className={field.type === 'number' ? 'text-right' : ''}>
-                      {field.label}
-                    </div>
+              <div>
+                <Label>Due Date</Label>
+                <Input
+                  type="date"
+                  value={invoiceData.dueDate}
+                  onChange={(e) => setInvoiceData(prev => ({ ...prev, dueDate: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label>Currency</Label>
+                <select
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors"
+                  value={selectedCountry.code}
+                  onChange={(e) => {
+                    const country = countriesData.find(c => c.code === e.target.value)
+                    if (country) {
+                      setSelectedCountry(country)
+                      setInvoiceData(prev => ({ ...prev, currency: country.currency }))
+                    }
+                  }}
+                >
+                  {countriesData.map(country => (
+                    <option key={country.code} value={country.code}>
+                      {country.name} ({country.currency.symbol})
+                    </option>
                   ))}
-                  <div></div> {/* For delete button */}
+                </select>
+              </div>
+            </div>
+
+            {/* Company Info & Branding */}
+            <div className="mb-6">
+              <InvoiceBrandingSettings
+                logo={invoiceData.companyLogo}
+                onLogoUpload={handleLogoUpload}
+                onLogoRemove={handleLogoRemove}
+                colorScheme={invoiceData.colorScheme}
+                onColorChange={handleColorChange}
+                companyName={invoiceData.companyName}
+                onCompanyNameChange={(name) => setInvoiceData(prev => ({ ...prev, companyName: name }))}
+              />
+            </div>
+
+            {/* Bill To Section */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-3">Bill To</h3>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <Label>Name</Label>
+                  <Input
+                    value={invoiceData.billTo.name}
+                    onChange={(e) => updateBillTo('name', e.target.value)}
+                    placeholder="Client's Name"
+                  />
                 </div>
+                <div>
+                  <Label>Email</Label>
+                  <Input
+                    type="email"
+                    value={invoiceData.billTo.email}
+                    onChange={(e) => updateBillTo('email', e.target.value)}
+                    placeholder="client@example.com"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <Label>Address</Label>
+                  <textarea
+                    className="flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
+                    value={invoiceData.billTo.address}
+                    onChange={(e) => updateBillTo('address', e.target.value)}
+                    placeholder="Client's Address"
+                  />
+                </div>
+              </div>
+            </div>
 
-                {invoiceData.items.map((item, index) => (
-                  <div key={item.id} className="grid gap-4 mb-4 items-center"
-                       style={{ gridTemplateColumns: `${fields.filter(f => f.enabled).map(f => `${f.width}fr`).join(' ')} 1fr` }}>
-                    {fields.filter(f => f.enabled).map(field => (
-                      <div key={field.id}>
-                        <Input
-                          type={field.type}
-                          value={item[field.name] || ''}
-                          onChange={(e) => updateItem(index, field.name, field.type === 'number' ? Number(e.target.value) : e.target.value)}
-                          className={field.type === 'number' ? 'text-right' : ''}
-                          min={field.type === 'number' ? '0' : undefined}
-                          step={field.type === 'number' ? '0.01' : undefined}
-                          placeholder={field.label}
-                        />
-                      </div>
-                    ))}
-                    <div className="flex justify-end">
-                      {invoiceData.items.length > 1 && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeItem(index)}
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-
+            {/* Items Section */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-semibold">Items</h3>
                 <Button
                   variant="outline"
+                  size="sm"
                   onClick={addItem}
-                  className="mt-4"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Item
                 </Button>
               </div>
+              
+              <DragDropContext onDragEnd={onDragEnd}>
+                <Droppable droppableId="items">
+                  {(provided) => (
+                    <div {...provided.droppableProps} ref={provided.innerRef}>
+                      {invoiceData.items.map((item, index) => (
+                        <Draggable key={item.id} draggableId={item.id} index={index}>
+                          {(provided) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              className="bg-secondary/5 p-3 rounded-lg mb-3 group"
+                            >
+                              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                                {fields.filter(f => f.enabled).map(field => (
+                                  <div key={field.id}>
+                                    <Label className="text-sm">{field.label}</Label>
+                                    <Input
+                                      type={field.type}
+                                      value={item[field.name] || ''}
+                                      onChange={(e) => updateItem(index, field.name, field.type === 'number' ? Number(e.target.value) : e.target.value)}
+                                      className={field.type === 'number' ? 'text-right' : ''}
+                                      min={field.type === 'number' ? '0' : undefined}
+                                      step={field.type === 'number' ? '0.01' : undefined}
+                                    />
+                                  </div>
+                                ))}
+                                {invoiceData.items.length > 1 && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => removeItem(index)}
+                                    className="opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-700 hover:bg-red-50 mt-6"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              </DragDropContext>
+            </div>
 
-              {/* Totals */}
-              <div className="flex justify-end mb-8">
-                <div className="w-72">
-                  <div className="flex justify-between py-2">
-                    <span className="font-semibold">Total:</span>
-                    <span className="font-semibold">
-                      {invoiceData.currency.symbol}{calculateTotal().toLocaleString()}
-                    </span>
-                  </div>
+            {/* Total */}
+            <div className="flex justify-end mb-6">
+              <div className="w-48">
+                <div className="flex justify-between py-2 font-semibold">
+                  <span>Total:</span>
+                  <span>{invoiceData.currency.symbol}{calculateTotal().toLocaleString()}</span>
                 </div>
               </div>
+            </div>
 
-              {/* Notes */}
-              <div>
-                <Label>Notes</Label>
-                <Input
-                  value={invoiceData.notes}
-                  onChange={(e) => setInvoiceData(prev => ({ ...prev, notes: e.target.value }))}
-                  placeholder="Additional notes or payment instructions"
-                />
-              </div>
-            </Card>
-          </div>
+            {/* Notes */}
+            <div>
+              <Label>Notes</Label>
+              <textarea
+                className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
+                value={invoiceData.notes}
+                onChange={(e) => setInvoiceData(prev => ({ ...prev, notes: e.target.value }))}
+                placeholder="Additional notes or payment terms..."
+              />
+            </div>
+          </Card>
+        </div>
 
-          {/* Right Column - Preview */}
-          <div className="lg:sticky lg:top-4">
+        {/* Preview Column */}
+        <div className="lg:sticky lg:top-4 h-fit">
+          <Card className="p-4">
+            <h2 className="text-lg font-semibold mb-4">Preview</h2>
             <InvoicePreview
               invoiceData={invoiceData}
-              fields={fields}
+              fields={fields.filter(f => f.enabled)}
               style={invoiceStyle}
             />
-          </div>
+          </Card>
         </div>
       </div>
     </div>
