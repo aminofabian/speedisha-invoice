@@ -6,11 +6,9 @@ import { Mail } from 'lucide-react';
 import { redirect } from 'next/navigation';
 
 async function LoginPage() {
-    const session =  await auth();
+    const session = await auth();
     if (session?.user) {
         redirect('/dashboard')
-
-
     }
     return (
         <div className="min-h-screen flex items-center justify-center bg-background">
@@ -27,10 +25,22 @@ async function LoginPage() {
 
                 <form className="mt-8 space-y-6" action={async (formData) => {
                     "use server"
-                    await signIn("nodemailer", formData)
+                    const email = formData.get("email");
+                    if (!email || typeof email !== "string") {
+                        throw new Error("Invalid email");
+                    }
+                    
+                    await signIn("email", {
+                        email,
+                        callbackUrl: "/dashboard"
+                    });
                 }}>
                     <div className="space-y-4">
-                        <OverlappingInput />
+                        <OverlappingInput
+                            type="email"
+                            name="email"
+                            required={true}
+                        />
                     </div>
 
                     <SubmitButton>

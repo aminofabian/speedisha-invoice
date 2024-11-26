@@ -1,11 +1,19 @@
 import { Input } from "@/components/ui/input";
+import { InputHTMLAttributes } from "react";
 
-interface OverlappingInputProps {
+interface OverlappingInputProps extends InputHTMLAttributes<HTMLInputElement> {
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-export default function OverlappingInput({ value, onChange }: OverlappingInputProps) {
+export default function OverlappingInput({ 
+  value, 
+  onChange,
+  type = "text",
+  name,
+  required,
+  ...props 
+}: OverlappingInputProps) {
   return (
     <div className="group relative">
       <label
@@ -18,11 +26,12 @@ export default function OverlappingInput({ value, onChange }: OverlappingInputPr
         id="email-input"
         className="h-10"
         placeholder="Enter your email address"
-        type="email"
-        name='email'
+        type={type}
+        name={name}
         value={value}
         onChange={onChange}
-        required
+        required={required}
+        {...props}
       />
     </div>
   );
