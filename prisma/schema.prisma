@@ -8,15 +8,17 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String     @id @default(cuid())
   name          String?
-  email         String    @unique
+  email         String     @unique
   emailVerified DateTime?
   image         String?
+  hasOnboarded  Boolean    @default(false)
   accounts      Account[]
   sessions      Session[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  businesses    Business[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 }
 
 model Account {
@@ -52,4 +54,84 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model Business {
+  id          String    @id @default(cuid())
+  userId      String
+  name        String
+  ownerName   String
+  email       String
+  phone       String
+  address     String
+  city        String
+  state       String
+  zipCode     String
+  logo        String?
+  website     String?
+  colorScheme Json
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invoices    Invoice[]
+  clients     Client[]
+
+  @@index([userId])
+}
+
+model Client {
+  id          String    @id @default(cuid())
+  businessId  String
+  name        String
+  email       String
+  phone       String?
+  address     String?
+  city        String?
+  state       String?
+  zipCode     String?
+  notes       String?   @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  business    Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  invoices    Invoice[]
+
+  @@index([businessId])
+}
+
+model Invoice {
+  id          String      @id @default(cuid())
+  businessId  String
+  clientId    String
+  number      String
+  status      String      @default("draft") // draft, sent, paid, overdue, cancelled
+  issueDate   DateTime
+  dueDate     DateTime
+  subtotal    Float
+  tax         Float       @default(0)
+  total       Float
+  notes       String?     @db.Text
+  terms       String?     @db.Text
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  business    Business    @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  client      Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  items       InvoiceItem[]
+
+  @@index([businessId])
+  @@index([clientId])
+  @@unique([businessId, number])
+}
+
+model InvoiceItem {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  description String
+  quantity    Float
+  unitPrice   Float
+  amount      Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
 }

@@ -8,11 +8,11 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await requireUser();
+  // const session = await requireUser();
 
-  if (!session) {
-    redirect('/login');
-  }
+  // if (!session) {
+  //   redirect('/login');
+  // }
 
   return (
     <div className="h-screen flex">

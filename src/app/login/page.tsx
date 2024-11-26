@@ -12,8 +12,8 @@ async function LoginPage() {
     }
     return (
         <div className="min-h-screen flex items-center justify-center bg-background">
-            <div className="w-full max-w-md space-y-8 p-8 bg-card rounded-lg shadow-lg">
-                <div className="flex flex-col items-center justify-center space-y-2">
+            <div className="w-full max-w-md p-3 bg-card rounded-lg shadow-lg">
+                <div className="flex flex-col items-center justify-center">
                     <Logo className="w-20 h-20" />
                     <h2 className="mt-6 text-3xl font-bold text-center text-foreground">
                         Welcome Back
@@ -51,12 +51,12 @@ async function LoginPage() {
                         Continue with Email
                     </SubmitButton>
 
-                    <p className="mt-2 text-center text-sm text-muted-foreground">
+                    {/* <p className="mt-2 text-center text-sm text-muted-foreground">
                         Don't have an account?{' '}
                         <a href="/register" className="font-medium text-primary hover:text-primary/90">
                             Sign up
                         </a>
-                    </p>
+                    </p> */}
                 </form>
             </div>
         </div>
