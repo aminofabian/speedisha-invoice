@@ -5,6 +5,7 @@ import nodemailer from "nodemailer";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "./db";
 import type { Provider } from "next-auth/providers";
+import { getEmailTemplate } from '@/lib/email-template';
 
 declare module "next-auth" {
   interface Session extends DefaultSession {
@@ -26,34 +27,17 @@ const transporter = nodemailer.createTransport({
 
 const sendVerificationRequest = async ({ identifier: email, url }: { identifier: string; url: string }) => {
   try {
+    console.log('Sending verification email to:', email);
+    console.log('Verification URL:', url);
+
     const result = await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: email,
       subject: "Sign in to Speedisha",
-      html: `
-        <body style="background: #f9f9f9; padding: 20px;">
-          <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <h1 style="color: #333; text-align: center; margin-bottom: 30px;">Welcome to Speedisha!</h1>
-            <p style="color: #666; font-size: 16px; line-height: 1.5; margin-bottom: 30px; text-align: center;">
-              Click the button below to sign in to your account.
-            </p>
-            <div style="text-align: center; margin-bottom: 30px;">
-              <a href="${url}" 
-                 style="background: #0070f3; color: white; padding: 12px 30px; 
-                        text-decoration: none; border-radius: 5px; font-weight: 500;
-                        display: inline-block;">
-                Sign in to Speedisha
-              </a>
-            </div>
-            <p style="color: #999; font-size: 14px; text-align: center; margin-bottom: 0;">
-              If you didn't request this email, you can safely ignore it.
-            </p>
-          </div>
-        </body>
-      `,
+      html: getEmailTemplate(url),
     });
 
-    console.log('Verification email sent:', result.messageId);
+    console.log('Email sent successfully:', result.messageId);
   } catch (error) {
     console.error('Error sending verification email:', error);
     throw new Error('Failed to send verification email');

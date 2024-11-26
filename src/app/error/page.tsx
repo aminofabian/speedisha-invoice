@@ -2,7 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { EqualApproximatelyIcon } from 'lucide-react';
+import { XCircle } from 'lucide-react';
 
 export default function ErrorPage() {
     const searchParams = useSearchParams();
@@ -22,7 +22,7 @@ export default function ErrorPage() {
             <div className="w-full max-w-md space-y-8 p-8 bg-card rounded-lg shadow-lg">
                 <div className="flex flex-col items-center justify-center space-y-4">
                     <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
-                        <EqualApproximatelyIcon className="w-6 h-6 text-destructive" />
+                        <XCircle className="w-6 h-6 text-destructive" />
                     </div>
                     
                     <h2 className="text-2xl font-bold text-center text-foreground">
@@ -43,7 +43,7 @@ export default function ErrorPage() {
                         
                         <Link 
                             href="/"
-                            className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+                            className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-secondary text-secondary-foreground hover:bg-secondary/90 h-10 px-4 py-2"
                         >
                             Go Home
                         </Link>
