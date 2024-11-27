@@ -2,8 +2,15 @@
 
 import React from 'react';
 import { Card } from '@/components/ui/card';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn } from '@/lib/utils';
+import { FileText, Palette, Sparkles } from 'lucide-react';
 
 export type InvoiceStyle = 'basic' | 'styled' | 'uber-styled';
 
@@ -12,43 +19,71 @@ interface InvoiceStyleSelectorProps {
   onChange: (style: InvoiceStyle) => void;
 }
 
+const styles = [
+  {
+    id: 'basic',
+    name: 'Basic',
+    description: 'Clean and minimalistic layout',
+    icon: FileText
+  },
+  {
+    id: 'styled',
+    name: 'Styled',
+    description: 'Enhanced typography and subtle colors',
+    icon: Palette
+  },
+  {
+    id: 'uber-styled',
+    name: 'Premium',
+    description: 'Professional design with modern effects',
+    icon: Sparkles
+  }
+] as const;
+
 export function InvoiceStyleSelector({ value, onChange }: InvoiceStyleSelectorProps) {
   return (
-    <Card className="p-4">
-      <h3 className="flex items-center text-lg font-semibold mb-4">Invoice Style</h3>
-      <RadioGroup
-        value={value}
-        onValueChange={(val) => onChange(val as InvoiceStyle)}
-        className="grid grid-cols-1 gap-4"
-      >
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="basic" id="basic" />
-          <Label htmlFor="basic" className="flex flex-col">
-            <span className="font-medium">Basic</span>
-            <span className="text-sm text-muted-foreground">
-              Clean and minimalistic layout
-            </span>
-          </Label>
-        </div>
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="styled" id="styled" />
-          <Label htmlFor="styled" className="flex flex-col">
-            <span className="font-medium">Styled</span>
-            <span className="text-sm text-muted-foreground">
-              Enhanced typography and subtle colors
-            </span>
-          </Label>
-        </div>
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="uber-styled" id="uber-styled" />
-          <Label htmlFor="uber-styled" className="flex flex-col">
-            <span className="font-medium">Premium</span>
-            <span className="text-sm text-muted-foreground">
-              Professional design with modern effects
-            </span>
-          </Label>
-        </div>
-      </RadioGroup>
+    <Card className="p-6 bg-gradient-to-br from-background to-muted">
+      <h3 className="flex items-center text-lg font-semibold mb-6 text-foreground/90">
+        Invoice Style
+      </h3>
+      <div className="flex gap-4">
+        <TooltipProvider delayDuration={200}>
+          {styles.map((style) => {
+            const Icon = style.icon;
+            const isSelected = value === style.id;
+            return (
+              <Tooltip key={style.id}>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={isSelected ? "default" : "outline"}
+                    className={cn(
+                      "flex-1 flex items-center gap-2 py-6 transition-all duration-200",
+                      isSelected ? 
+                        "bg-primary text-primary-foreground shadow-lg scale-105" : 
+                        "hover:bg-accent hover:text-accent-foreground hover:scale-102",
+                      "border-2",
+                      isSelected && "border-primary"
+                    )}
+                    onClick={() => onChange(style.id as InvoiceStyle)}
+                  >
+                    <Icon className={cn(
+                      "w-5 h-5",
+                      isSelected ? "text-primary-foreground" : "text-muted-foreground"
+                    )} />
+                    <span className="font-medium">{style.name}</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent 
+                  className="bg-popover/95 backdrop-blur-sm border-primary/10"
+                  sideOffset={8}
+                >
+                  <p className="text-sm">{style.description}</p>
+                </TooltipContent>
+              </Tooltip>
+            );
+          })}
+        </TooltipProvider>
+      </div>
     </Card>
   );
 }

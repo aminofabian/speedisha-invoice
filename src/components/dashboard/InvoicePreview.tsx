@@ -57,15 +57,14 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
   const invoiceRef = useRef<HTMLDivElement>(null);
 
   const getStyleClasses = () => {
-    const baseClasses = 'p-8 bg-white rounded-lg shadow-lg'
+    // A4 dimensions in pixels at 96 DPI: 794 x 1123
+    const baseClasses = 'p-16 bg-white shadow-lg mx-auto w-[21cm] min-h-[29.7cm] flex flex-col'
 
     switch (style) {
       case 'basic':
-        return cn(baseClasses, 'border')
       case 'styled':
-        return cn(baseClasses, 'border-2')
       case 'uber-styled':
-        return cn(baseClasses, 'border-0')
+        return cn(baseClasses)
       default:
         return baseClasses
     }
@@ -74,18 +73,18 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
   const getHeaderClasses = () => {
     switch (style) {
       case 'basic':
-        return 'mb-8'
+        return 'mb-20'
       case 'styled':
-        return 'mb-8 p-4 bg-gray-50 rounded-lg'
+        return 'mb-20 py-8 bg-gray-50'
       case 'uber-styled':
-        return cn('mb-8 p-6 rounded-lg')
+        return cn('mb-20 py-8')
       default:
-        return 'mb-8'
+        return 'mb-20'
     }
   };
 
   const getTableHeaderClasses = () => {
-    const baseClasses = 'px-4 py-2 text-left font-medium'
+    const baseClasses = 'px-8 py-5 text-left font-semibold tracking-wider'
 
     switch (style) {
       case 'basic':
@@ -105,70 +104,105 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
     switch (style) {
       case 'basic':
         return {
-          container: {},
-          border: {},
-          header: {},
-          title: {},
-          tableHeader: {},
-          billTo: {},
-          total: {},
-          notes: {}
+          container: {
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+          },
+          header: {
+            borderColor: '#e5e7eb'
+          },
+          title: {
+            color: '#111827'
+          },
+          tableHeader: {
+            borderColor: '#e5e7eb'
+          },
+          billTo: {
+            padding: '1.5rem',
+            background: '#f9fafb'
+          },
+          total: {
+            padding: '1.5rem',
+            background: '#f9fafb'
+          },
+          notes: {
+            padding: '1.5rem',
+            background: '#f9fafb',
+            marginTop: '2rem'
+          }
         }
       case 'styled':
         return {
           container: {
-            borderColor: primary
+            borderColor: primary,
+            boxShadow: `0 4px 6px -1px ${primary}15, 0 2px 4px -1px ${primary}10`
           },
-          border: {},
           header: {
             background: `${secondary}0a`
           },
-          title: { color: primary },
+          title: { 
+            color: primary,
+            fontWeight: 600
+          },
           tableHeader: {
             background: `${secondary}15`,
             color: primary
           },
           billTo: {
-            background: `${accent}0a`
+            padding: '1.5rem',
+            background: `${accent}0a`,
+            border: `1px solid ${accent}20`
           },
           total: {
+            padding: '1.5rem',
             background: `${secondary}0a`,
-            color: primary
+            color: primary,
+            border: `1px solid ${secondary}20`
           },
           notes: {
-            background: `${accent}05`
+            padding: '1.5rem',
+            background: `${accent}05`,
+            border: `1px solid ${accent}15`,
+            marginTop: '2rem'
           }
         }
       case 'uber-styled':
         return {
           container: {
-            background: `linear-gradient(to bottom right, ${primary}1a, ${secondary}1a)`
+            background: `linear-gradient(145deg, ${primary}05, ${secondary}05)`,
+            boxShadow: `0 10px 25px -5px ${primary}15, 0 8px 10px -6px ${secondary}15`
           },
-          border: {},
           header: {
-            background: `linear-gradient(to right, ${primary}0d, ${secondary}0d)`,
-            borderBottom: `2px solid ${accent}30`
+            background: `linear-gradient(to right, ${primary}08, ${secondary}08)`,
+            borderBottom: `2px solid ${accent}20`
           },
           title: { 
             color: primary,
+            fontWeight: 700,
             textShadow: `1px 1px 2px ${secondary}20`
           },
           tableHeader: {
-            background: `linear-gradient(to right, ${primary}15, ${secondary}15)`,
+            background: `linear-gradient(to right, ${primary}10, ${secondary}10)`,
             color: primary,
-            borderBottom: `2px solid ${accent}30`
+            borderBottom: `2px solid ${accent}20`
           },
           billTo: {
-            background: `linear-gradient(to right, ${secondary}0a, ${accent}0a)`,
-            borderLeft: `3px solid ${primary}40`
+            padding: '1.5rem',
+            background: `linear-gradient(145deg, ${secondary}08, ${accent}08)`,
+            borderLeft: `3px solid ${primary}30`,
+            boxShadow: `0 4px 6px -1px ${secondary}10`
           },
           total: {
-            background: `linear-gradient(to right, transparent, ${primary}20, ${secondary}20)`,
-            color: primary
+            padding: '1.5rem',
+            background: `linear-gradient(145deg, ${primary}10, ${secondary}10)`,
+            color: primary,
+            boxShadow: `0 4px 6px -1px ${primary}10`
           },
           notes: {
-            background: `linear-gradient(to right, ${accent}05, ${secondary}05)`,
-            borderLeft: `2px solid ${primary}30`
+            padding: '1.5rem',
+            background: `linear-gradient(145deg, ${accent}05, ${secondary}05)`,
+            borderLeft: `2px solid ${primary}20`,
+            marginTop: '2rem',
+            boxShadow: `0 4px 6px -1px ${accent}10`
           }
         }
       default:
@@ -188,21 +222,68 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
   const downloadAsPDF = async () => {
     if (!invoiceRef.current) return;
 
+    // Set specific dimensions for better quality
+    const scale = 2; // Increase for better quality
+    const a4Width = 2480; // A4 width at 300 DPI
+    const a4Height = 3508; // A4 height at 300 DPI
+
     const canvas = await html2canvas(invoiceRef.current, {
-      scale: 2,
+      scale: scale,
       useCORS: true,
-      logging: false
+      logging: false,
+      width: invoiceRef.current.offsetWidth,
+      height: invoiceRef.current.offsetHeight,
+      windowWidth: invoiceRef.current.offsetWidth,
+      windowHeight: invoiceRef.current.offsetHeight,
+      x: 0,
+      y: 0,
+      scrollX: 0,
+      scrollY: 0,
+      backgroundColor: '#ffffff'
     });
 
-    const imgData = canvas.toDataURL('image/png');
-    const pdf = new jsPDF('portrait', 'mm', 'a4');
-    
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const ratio = pageWidth / canvas.width;
-    const imgWidth = canvas.width * ratio;
-    const imgHeight = canvas.height * ratio;
+    const imgData = canvas.toDataURL('image/png', 1.0);
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
 
-    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+
+    // Calculate scaling to maintain aspect ratio
+    const aspectRatio = canvas.height / canvas.width;
+    let imgWidth = pdfWidth;
+    let imgHeight = pdfWidth * aspectRatio;
+
+    // If height exceeds page height, scale down based on height
+    if (imgHeight > pdfHeight) {
+      imgHeight = pdfHeight;
+      imgWidth = imgHeight / aspectRatio;
+    }
+
+    // Center horizontally
+    const xOffset = (pdfWidth - imgWidth) / 2;
+
+    pdf.addImage(imgData, 'PNG', xOffset, 0, imgWidth, imgHeight);
+
+    // Add additional pages if content exceeds one page
+    if (imgHeight > pdfHeight) {
+      const totalPages = Math.ceil(imgHeight / pdfHeight);
+      for (let page = 1; page < totalPages; page++) {
+        pdf.addPage();
+        pdf.addImage(
+          imgData,
+          'PNG',
+          xOffset,
+          -pdfHeight * page,
+          imgWidth,
+          imgHeight
+        );
+      }
+    }
+
     pdf.save(`invoice-${invoiceData.invoiceNumber || 'draft'}.pdf`);
   };
 
@@ -311,116 +392,167 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <div ref={invoiceRef} className={getStyleClasses()} style={styles.container}>
-        {/* Header */}
-        <div className={getHeaderClasses()} style={styles.header}>
-          <div className="flex justify-between items-start">
-            <div>
-              {invoiceData.companyLogo && (
-                <div className="relative w-32 h-32 mb-4">
-                  <Image
-                    src={invoiceData.companyLogo}
-                    alt="Company logo"
-                    fill
-                    className="object-contain"
-                  />
+      <div ref={invoiceRef} className={getStyleClasses()} style={{
+        ...styles.container,
+        margin: '0 auto',
+        padding: '4rem',
+        boxSizing: 'border-box',
+        minHeight: '29.7cm',
+      }}>
+        {/* Header Section */}
+        <div className="flex-none">
+          <div className={getHeaderClasses()} style={{
+            ...styles.header,
+            marginBottom: '5rem',
+          }}>
+            <div className="flex justify-between items-start">
+              <div className="flex-1">
+                {invoiceData.companyLogo ? (
+                  <div className="w-64 h-32 relative">
+                    <Image
+                      src={invoiceData.companyLogo}
+                      alt="Company Logo"
+                      fill
+                      style={{ objectFit: 'contain' }}
+                      priority
+                    />
+                  </div>
+                ) : (
+                  <h1 className="text-3xl font-bold" style={styles.title}>
+                    {invoiceData.companyName}
+                  </h1>
+                )}
+              </div>
+
+              <div className="text-right space-y-8">
+                <h2 className="text-4xl font-bold tracking-wide" style={styles.title}>INVOICE</h2>
+                <div className="space-y-4 text-lg">
+                  <div>
+                    <span className="font-medium">Invoice Number: </span>
+                    <span className="ml-2">{invoiceData.invoiceNumber}</span>
+                  </div>
+                  <div>
+                    <span className="font-medium">Date: </span>
+                    <span className="ml-2">{invoiceData.date}</span>
+                  </div>
+                  <div>
+                    <span className="font-medium">Due Date: </span>
+                    <span className="ml-2">{invoiceData.dueDate}</span>
+                  </div>
                 </div>
-              )}
-              <h1 className="text-2xl font-bold" style={styles.title}>
-                {invoiceData.companyName || 'Your Company Name'}
-              </h1>
-              <p className="text-gray-600 mt-1">
-                123 Business Street<br />
-                City, State 12345<br />
-                contact@company.com
-              </p>
-            </div>
-            <div className="text-right">
-              <h2 className="text-xl font-semibold mb-2" style={styles.title}>
-                INVOICE
-              </h2>
-              <p className="text-gray-600">
-                Invoice #: {invoiceData.invoiceNumber}<br />
-                Date: {invoiceData.date}<br />
-                Due Date: {invoiceData.dueDate}
-              </p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Bill To Section */}
-        <div className="mb-8 p-4 rounded-lg" style={styles.billTo}>
-          <div className="text-sm font-medium" style={style === 'uber-styled' ? { color: invoiceData.colorScheme.primary } : {}}>
-            Bill To:
-          </div>
-          <div className="mt-2">
-            <div className="font-semibold">{invoiceData.billTo.name}</div>
-            <div className="mt-1 text-gray-600 whitespace-pre-line">
-              {invoiceData.billTo.address}
+        {/* Content Section */}
+        <div className="flex-1">
+          <div className="grid grid-cols-2 gap-20 mb-20">
+            {/* From Section */}
+            <div className="space-y-3">
+              <div className="text-lg font-semibold mb-6" style={style === 'uber-styled' ? { color: invoiceData.colorScheme.primary } : {}}>
+                From:
+              </div>
+              <div className="text-lg">
+                <div className="font-medium">{invoiceData.companyName}</div>
+                <div className="text-gray-600 mt-4 leading-relaxed">
+                  123 Business Street<br />
+                  City, State 12345<br />
+                  contact@company.com
+                </div>
+              </div>
             </div>
-            <div className="mt-1 text-gray-600">{invoiceData.billTo.email}</div>
-          </div>
-        </div>
 
-        {/* Items Table */}
-        <div className="mb-8">
-          <table className="w-full">
-            <thead>
-              <tr>
-                {fields.map((field) => (
-                  <th key={field.id} className={getTableHeaderClasses()} style={styles.tableHeader}>
-                    {field.label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {invoiceData.items.map((item, index) => (
-                <tr
-                  key={item.id || index}
-                  className={cn(
-                    'text-sm hover:bg-gray-50',
-                    style === 'uber-styled' && 'transition-colors'
-                  )}
-                  style={style === 'uber-styled' ? { 
-                    ':hover': {
-                      background: `linear-gradient(to right, ${invoiceData.colorScheme.secondary}0a, ${invoiceData.colorScheme.accent}0a)`
-                    }
-                  } as React.CSSProperties : {}}
-                >
-                  {fields.map((field) => (
-                    <td key={field.id} className="px-4 py-3">
-                      {field.type === 'number'
-                        ? formatCurrency(
-                            typeof item[field.name] === 'number' ? item[field.name] as number : 0,
-                            invoiceData.currency.code
-                          )
-                        : item[field.name]}
-                    </td>
+            {/* Bill To Section */}
+            <div className="space-y-3">
+              <div className="text-lg font-semibold mb-6" style={style === 'uber-styled' ? { color: invoiceData.colorScheme.primary } : {}}>
+                Bill To:
+              </div>
+              <div className="text-lg">
+                <div className="font-medium">{invoiceData.billTo.name}</div>
+                <div className="text-gray-600 mt-4 leading-relaxed whitespace-pre-line">{invoiceData.billTo.address}</div>
+                <div className="text-gray-600 mt-4">{invoiceData.billTo.email}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Items Table */}
+          <div className="mb-20">
+            <table className="w-full">
+              <thead>
+                <tr>
+                  {fields.map((field, index) => (
+                    <th
+                      key={index}
+                      className={getTableHeaderClasses()}
+                      style={{
+                        ...styles.tableHeader,
+                        padding: '1.25rem 2rem',
+                      }}
+                    >
+                      {field.label}
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="text-lg">
+                {invoiceData.items.map((item, index) => (
+                  <tr key={item.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                    {fields.map((field, fieldIndex) => (
+                      <td
+                        key={fieldIndex}
+                        className="px-8 py-6"
+                      >
+                        {field.type === 'currency' ? (
+                          formatCurrency(item[field.name] as number, invoiceData.currency.code)
+                        ) : field.type === 'number' ? (
+                          item[field.name]?.toString()
+                        ) : (
+                          item[field.name]
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-        {/* Total */}
-        <div className="text-right p-4 rounded-lg" style={styles.total}>
-          <div className="text-2xl font-bold">
-            Total: {formatCurrency(calculateTotal(), invoiceData.currency.code)}
+          {/* Total Section */}
+          <div className="flex justify-end mb-20">
+            <div className="w-1/3 space-y-4">
+              <div className="flex justify-between text-lg py-2">
+                <span className="font-medium">Subtotal:</span>
+                <span>{formatCurrency(calculateTotal(), invoiceData.currency.code)}</span>
+              </div>
+              <div className="flex justify-between text-lg py-2">
+                <span className="font-medium">Tax (0%):</span>
+                <span>{formatCurrency(0, invoiceData.currency.code)}</span>
+              </div>
+              <div className="h-px bg-gray-200 my-6"></div>
+              <div className="flex justify-between text-2xl font-bold py-2">
+                <span>Total:</span>
+                <span>{formatCurrency(calculateTotal(), invoiceData.currency.code)}</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Notes */}
-        {invoiceData.notes && (
-          <div className={cn(
-            'mt-8 text-sm text-gray-600',
-            'p-4 rounded'
-          )} style={styles.notes}>
-            <div className="font-medium text-gray-900 mb-1">Notes:</div>
-            {invoiceData.notes}
+        {/* Footer Section */}
+        <div className="flex-none mt-auto">
+          {/* Notes */}
+          {invoiceData.notes && (
+            <div className="mb-16">
+              <div className="text-lg font-semibold text-gray-900 mb-4">Notes:</div>
+              <div className="text-lg leading-relaxed text-gray-600">{invoiceData.notes}</div>
+            </div>
+          )}
+
+          {/* Footer */}
+          <div className="text-center text-sm text-gray-500">
+            Thank you for your business!
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
