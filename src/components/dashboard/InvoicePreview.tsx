@@ -37,6 +37,7 @@ interface InvoicePreviewProps {
     };
     items: InvoiceItem[];
     notes: string;
+    tax: number;
     currency: {
       code: string;
       symbol: string;
@@ -212,11 +213,20 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
 
   const styles = getStyles()
 
-  const calculateTotal = () => {
+  const calculateSubtotal = () => {
     return invoiceData.items.reduce((sum, item) => {
       const amount = typeof item.amount === 'number' ? item.amount : 0;
       return sum + amount;
     }, 0);
+  };
+
+  const calculateTaxAmount = () => {
+    const subtotal = calculateSubtotal();
+    return (subtotal * (invoiceData.tax || 0)) / 100;
+  };
+
+  const calculateTotal = () => {
+    return calculateSubtotal() + calculateTaxAmount();
   };
 
   const downloadAsPDF = async () => {
@@ -523,11 +533,11 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
             <div className="w-1/3 space-y-4">
               <div className="flex justify-between text-lg py-2">
                 <span className="font-medium">Subtotal:</span>
-                <span>{formatCurrency(calculateTotal(), invoiceData.currency.code)}</span>
+                <span>{formatCurrency(calculateSubtotal(), invoiceData.currency.code)}</span>
               </div>
               <div className="flex justify-between text-lg py-2">
-                <span className="font-medium">Tax (0%):</span>
-                <span>{formatCurrency(0, invoiceData.currency.code)}</span>
+                <span className="font-medium">Tax ({invoiceData.tax || 0}%):</span>
+                <span>{formatCurrency(calculateTaxAmount(), invoiceData.currency.code)}</span>
               </div>
               <div className="h-px bg-gray-200 my-6"></div>
               <div className="flex justify-between text-2xl font-bold py-2">

@@ -54,6 +54,7 @@ interface InvoiceData {
   };
   items: InvoiceItem[];
   notes: string;
+  tax: number;
   currency: {
     code: string;
     symbol: string;
@@ -92,6 +93,7 @@ const initialInvoiceData: InvoiceData = {
     amount: 0
   }],
   notes: '',
+  tax: 0,
   currency: defaultCountry.currency,
   colorScheme: {
     primary: '#164e63',
@@ -151,7 +153,8 @@ export function InvoiceCreator() {
       
       // Recalculate amount if quantity or price changes
       if (fieldName === 'quantity' || fieldName === 'price') {
-        newItems[index].amount = Number(newItems[index].quantity || 0) * Number(newItems[index].price || 0)
+        const baseAmount = Number(newItems[index].quantity || 0) * Number(newItems[index].price || 0);
+        newItems[index].amount = baseAmount;
       }
       
       return { ...prev, items: newItems }
@@ -159,7 +162,9 @@ export function InvoiceCreator() {
   }
 
   const calculateTotal = () => {
-    return invoiceData.items.reduce((sum, item) => sum + (item.amount || 0), 0)
+    const subtotal = invoiceData.items.reduce((sum, item) => sum + (item.amount || 0), 0);
+    const taxAmount = (subtotal * (invoiceData.tax || 0)) / 100;
+    return subtotal + taxAmount;
   }
 
   const toggleField = (fieldId: string) => {
@@ -358,24 +363,16 @@ export function InvoiceCreator() {
                 />
               </div>
               <div>
-                <Label>Currency</Label>
-                <select
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors"
-                  value={selectedCountry.code}
-                  onChange={(e) => {
-                    const country = countriesData.find(c => c.code === e.target.value)
-                    if (country) {
-                      setSelectedCountry(country)
-                      setInvoiceData(prev => ({ ...prev, currency: country.currency }))
-                    }
-                  }}
-                >
-                  {countriesData.map(country => (
-                    <option key={country.code} value={country.code}>
-                      {country.name} ({country.currency.symbol})
-                    </option>
-                  ))}
-                </select>
+                <Label>Tax (%)</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  value={invoiceData.tax || 0}
+                  onChange={(e) => setInvoiceData(prev => ({ ...prev, tax: parseFloat(e.target.value) || 0 }))}
+                  placeholder="0.00"
+                />
               </div>
             </div>
 
