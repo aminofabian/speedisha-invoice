@@ -195,13 +195,14 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
     });
 
     const imgData = canvas.toDataURL('image/png');
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'px',
-      format: [canvas.width, canvas.height]
-    });
+    const pdf = new jsPDF('portrait', 'mm', 'a4');
+    
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const ratio = pageWidth / canvas.width;
+    const imgWidth = canvas.width * ratio;
+    const imgHeight = canvas.height * ratio;
 
-    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
     pdf.save(`invoice-${invoiceData.invoiceNumber || 'draft'}.pdf`);
   };
 
