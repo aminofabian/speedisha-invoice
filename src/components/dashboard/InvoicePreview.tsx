@@ -5,7 +5,7 @@ import { InvoiceStyle } from './InvoiceStyleSelector'
 import Image from 'next/image'
 import { jsPDF } from 'jspdf'
 import html2canvas from 'html2canvas'
-import { Document, Packer, Paragraph, Table, TableCell, TableRow, TextRun, HeadingLevel, AlignmentType } from 'docx'
+import { Document, Packer, Paragraph, Table, TableCell, TableRow, TextRun, HeadingLevel, AlignmentType, WidthType } from 'docx'
 import { Button } from '@/components/ui/button'
 import { Download, FileType } from 'lucide-react'
 import {
@@ -298,71 +298,426 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
 
   const downloadAsDoc = async () => {
     const doc = new Document({
+      styles: {
+        default: {
+          heading1: {
+            run: {
+              size: 32,
+              bold: true,
+            },
+            paragraph: {
+              spacing: {
+                after: 300,
+              },
+            },
+          },
+          heading2: {
+            run: {
+              size: 36,
+              bold: true,
+            },
+            paragraph: {
+              spacing: {
+                after: 300,
+              },
+            },
+          },
+        },
+      },
       sections: [{
-        properties: {},
+        properties: {
+          page: {
+            margin: {
+              top: 1440, // 1 inch = 1440 twips
+              right: 1440,
+              bottom: 1440,
+              left: 1440,
+            },
+          },
+        },
         children: [
+          // Header with company info and invoice details
           new Paragraph({
-            text: invoiceData.companyName,
-            heading: HeadingLevel.HEADING_1,
-            alignment: AlignmentType.LEFT,
-          }),
-          new Paragraph({
-            text: "INVOICE",
-            heading: HeadingLevel.HEADING_2,
-            alignment: AlignmentType.RIGHT,
+            children: [
+              new TextRun({
+                text: invoiceData.companyName,
+                bold: true,
+                size: 32,
+              }),
+            ],
+            spacing: {
+              after: 400,
+            },
           }),
           new Paragraph({
             children: [
-              new TextRun({ text: `Invoice #: ${invoiceData.invoiceNumber}` }),
-              new TextRun({ text: `Date: ${invoiceData.date}`, break: 1 }),
-              new TextRun({ text: `Due Date: ${invoiceData.dueDate}`, break: 1 }),
+              new TextRun({
+                text: "INVOICE",
+                bold: true,
+                size: 36,
+              }),
             ],
             alignment: AlignmentType.RIGHT,
+            spacing: {
+              after: 400,
+            },
           }),
-          new Paragraph({ text: "Bill To:", spacing: { before: 400 } }),
           new Paragraph({
             children: [
-              new TextRun({ text: invoiceData.billTo.name, bold: true }),
-              new TextRun({ text: invoiceData.billTo.address, break: 1 }),
-              new TextRun({ text: invoiceData.billTo.email, break: 1 }),
+              new TextRun({ 
+                text: `Invoice #: ${invoiceData.invoiceNumber}`,
+                size: 24,
+              }),
+              new TextRun({ 
+                text: `Date: ${invoiceData.date}`,
+                break: 1,
+                size: 24,
+              }),
+              new TextRun({ 
+                text: `Due Date: ${invoiceData.dueDate}`,
+                break: 1,
+                size: 24,
+              }),
             ],
+            alignment: AlignmentType.RIGHT,
+            spacing: {
+              after: 400,
+            },
           }),
+
+          // Billing Information
           new Table({
+            width: {
+              size: 100,
+              type: WidthType.PERCENTAGE,
+            },
             rows: [
+              new TableRow({
+                children: [
+                  new TableCell({
+                    children: [
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: "From:",
+                            bold: true,
+                            size: 24,
+                          }),
+                        ],
+                      }),
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: invoiceData.companyName,
+                            size: 24,
+                          }),
+                        ],
+                      }),
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: "123 Business Street",
+                            size: 24,
+                          }),
+                        ],
+                      }),
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: "City, State 12345",
+                            size: 24,
+                          }),
+                        ],
+                      }),
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: "contact@company.com",
+                            size: 24,
+                          }),
+                        ],
+                      }),
+                    ],
+                    width: {
+                      size: 50,
+                      type: WidthType.PERCENTAGE,
+                    },
+                  }),
+                  new TableCell({
+                    children: [
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: "Bill To:",
+                            bold: true,
+                            size: 24,
+                          }),
+                        ],
+                      }),
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: invoiceData.billTo.name,
+                            size: 24,
+                          }),
+                        ],
+                      }),
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: invoiceData.billTo.address,
+                            size: 24,
+                          }),
+                        ],
+                      }),
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: invoiceData.billTo.email,
+                            size: 24,
+                          }),
+                        ],
+                      }),
+                    ],
+                    width: {
+                      size: 50,
+                      type: WidthType.PERCENTAGE,
+                    },
+                  }),
+                ],
+              }),
+            ],
+            margins: {
+              top: 100,
+              bottom: 100,
+              right: 100,
+              left: 100,
+            },
+          }),
+
+          // Spacer
+          new Paragraph({
+            spacing: {
+              after: 400,
+            },
+          }),
+
+          // Items Table
+          new Table({
+            width: {
+              size: 100,
+              type: WidthType.PERCENTAGE,
+            },
+            rows: [
+              // Header row
               new TableRow({
                 children: fields.map(field => 
                   new TableCell({ 
-                    children: [new Paragraph({ text: field.label, alignment: AlignmentType.LEFT })],
+                    children: [
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: field.label,
+                            bold: true,
+                            size: 24,
+                          }),
+                        ],
+                        alignment: field.type === 'number' || field.type === 'currency' 
+                          ? AlignmentType.RIGHT 
+                          : AlignmentType.LEFT,
+                      }),
+                    ],
+                    width: {
+                      size: field.name === 'description' 
+                        ? 27 
+                        : field.name === 'quantity' 
+                        ? 15
+                        : field.name === 'name'
+                        ? 18
+                        : 20,
+                      type: WidthType.PERCENTAGE,
+                    },
+                    shading: {
+                      fill: "F3F4F6",
+                    },
                   })
                 ),
               }),
+              // Item rows
               ...invoiceData.items.map(item => 
                 new TableRow({
                   children: fields.map(field => 
                     new TableCell({
-                      children: [new Paragraph({ 
-                        text: field.type === 'number' 
-                          ? formatCurrency(typeof item[field.name] === 'number' ? item[field.name] as number : 0, invoiceData.currency.code)
-                          : String(item[field.name] || ''),
-                        alignment: field.type === 'number' ? AlignmentType.RIGHT : AlignmentType.LEFT,
-                      })],
+                      children: [
+                        new Paragraph({ 
+                          children: [
+                            new TextRun({
+                              text: field.type === 'currency'
+                                ? formatCurrency(typeof item[field.name] === 'number' ? item[field.name] as number : 0, invoiceData.currency.code)
+                                : String(item[field.name] || ''),
+                              size: 24,
+                            }),
+                          ],
+                          alignment: field.type === 'number' || field.type === 'currency'
+                            ? AlignmentType.RIGHT 
+                            : AlignmentType.LEFT,
+                        }),
+                      ],
+                      width: {
+                        size: field.name === 'description' 
+                          ? 27 
+                          : field.name === 'quantity' 
+                          ? 15
+                          : field.name === 'name'
+                          ? 18
+                          : 20,
+                        type: WidthType.PERCENTAGE,
+                      },
                     })
                   ),
                 })
               ),
             ],
+            margins: {
+              top: 100,
+              bottom: 100,
+              right: 100,
+              left: 100,
+            },
           }),
+
+          // Spacer
           new Paragraph({
-            text: `Total: ${formatCurrency(calculateTotal(), invoiceData.currency.code)}`,
-            alignment: AlignmentType.RIGHT,
-            spacing: { before: 400 },
+            spacing: {
+              after: 400,
+            },
           }),
+
+          // Totals
+          new Table({
+            width: {
+              size: 40,
+              type: WidthType.PERCENTAGE,
+            },
+            alignment: AlignmentType.RIGHT,
+            rows: [
+              new TableRow({
+                children: [
+                  new TableCell({
+                    children: [
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: "Subtotal:",
+                            size: 24,
+                          }),
+                        ],
+                      }),
+                    ],
+                  }),
+                  new TableCell({
+                    children: [
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: formatCurrency(calculateSubtotal(), invoiceData.currency.code),
+                            size: 24,
+                          }),
+                        ],
+                        alignment: AlignmentType.RIGHT,
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+              ...(invoiceData.tax > 0 ? [
+                new TableRow({
+                  children: [
+                    new TableCell({
+                      children: [
+                        new Paragraph({
+                          children: [
+                            new TextRun({
+                              text: `Tax (${invoiceData.tax}%):`,
+                              size: 24,
+                            }),
+                          ],
+                        }),
+                      ],
+                    }),
+                    new TableCell({
+                      children: [
+                        new Paragraph({
+                          children: [
+                            new TextRun({
+                              text: formatCurrency(calculateTaxAmount(), invoiceData.currency.code),
+                              size: 24,
+                            }),
+                          ],
+                          alignment: AlignmentType.RIGHT,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ] : []),
+              new TableRow({
+                children: [
+                  new TableCell({
+                    children: [
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: "Total:",
+                            bold: true,
+                            size: 24,
+                          }),
+                        ],
+                      }),
+                    ],
+                  }),
+                  new TableCell({
+                    children: [
+                      new Paragraph({
+                        children: [
+                          new TextRun({
+                            text: formatCurrency(calculateTotal(), invoiceData.currency.code),
+                            bold: true,
+                            size: 24,
+                          }),
+                        ],
+                        alignment: AlignmentType.RIGHT,
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            ],
+          }),
+
+          // Notes
           ...(invoiceData.notes ? [
             new Paragraph({
-              text: "Notes:",
-              spacing: { before: 400 },
+              children: [
+                new TextRun({
+                  text: "Notes:",
+                  bold: true,
+                  size: 24,
+                }),
+              ],
+              spacing: {
+                before: 400,
+                after: 200,
+              },
             }),
-            new Paragraph({ text: invoiceData.notes }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: invoiceData.notes,
+                  size: 24,
+                }),
+              ],
+            }),
           ] : []),
         ],
       }],
