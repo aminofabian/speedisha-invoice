@@ -3,7 +3,6 @@ import { cn } from '@/lib/utils'
 import { ItemField } from './InvoiceCreator'
 import { InvoiceStyle } from './InvoiceStyleSelector'
 import Image from 'next/image'
-import { formatCurrency } from '@/lib/utils'
 import { jsPDF } from 'jspdf'
 import html2canvas from 'html2canvas'
 import { Document, Packer, Paragraph, Table, TableCell, TableRow, TextRun, HeadingLevel, AlignmentType } from 'docx'
@@ -393,6 +392,14 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
     return formattedText;
   };
 
+  // Format currency with proper symbol and decimal places
+  const formatCurrency = (value: number, symbol: string) => {
+    return `${symbol}${value.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })}`;
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
@@ -500,8 +507,15 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
           </div>
 
           {/* Items Table */}
-          <div className="mb-20">
-            <table className="w-full">
+          <div className="mb-20 -mx-6 overflow-x-auto">
+            <table className="w-full table-fixed border-separate border-spacing-0">
+              <colgroup>
+                <col style={{ width: '24%' }} /> {/* name */}
+                <col style={{ width: '26%' }} /> {/* description */}
+                <col style={{ width: '16%' }} /> {/* price */}
+                <col style={{ width: '14%' }} /> {/* quantity */}
+                <col style={{ width: '20%' }} /> {/* amount */}
+              </colgroup>
               <thead>
                 <tr>
                   {fields.map((field, index) => (
@@ -510,7 +524,10 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
                       className={getTableHeaderClasses()}
                       style={{
                         ...styles.tableHeader,
-                        padding: '1.25rem 2rem',
+                        padding: '1rem',
+                        paddingRight: field.type === 'number' || field.type === 'currency' ? '0.75rem' : '1rem',
+                        paddingLeft: field.type === 'number' || field.type === 'currency' ? '0.5rem' : '1rem',
+                        textAlign: field.type === 'number' || field.type === 'currency' ? 'right' : 'left'
                       }}
                     >
                       {field.label}
@@ -521,20 +538,66 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
               <tbody className="text-lg">
                 {invoiceData.items.map((item, index) => (
                   <tr key={item.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                    {fields.map((field, fieldIndex) => (
-                      <td
-                        key={fieldIndex}
-                        className="px-8 py-6"
-                      >
-                        {field.type === 'currency' ? (
-                          formatCurrency(item[field.name] as number, invoiceData.currency.code)
-                        ) : field.type === 'number' ? (
-                          item[field.name]?.toString()
-                        ) : (
-                          item[field.name]
-                        )}
-                      </td>
-                    ))}
+                    {fields.map((field, fieldIndex) => {
+                      const value = item[field.name];
+                      const classes = cn(
+                        "py-4",
+                        (field.type === 'number' || field.type === 'currency') && "text-right pr-2",
+                        (field.name === 'name' || field.name === 'description') && "px-4 align-top"
+                      );
+
+                      if (field.type === 'currency') {
+                        const numValue = typeof value === 'string' ? parseFloat(value) : (value as number);
+                        const formattedValue = formatCurrency(numValue || 0, '');
+                        const isLong = formattedValue.length > 8;
+                        return (
+                          <td key={fieldIndex} className={classes}>
+                            <div className={cn(
+                              "flex justify-end items-center gap-0.5",
+                              isLong ? "text-sm" : "text-base"
+                            )}>
+                              <span className="text-gray-500 text-sm">{invoiceData.currency.symbol}</span>
+                              {formattedValue}
+                            </div>
+                          </td>
+                        );
+                      }
+
+                      if (field.type === 'number') {
+                        const numValue = typeof value === 'string' ? parseFloat(value) : (value as number);
+                        const formattedValue = (numValue || 0).toLocaleString();
+                        const isLong = formattedValue.length > 8;
+                        return (
+                          <td key={fieldIndex} className={classes}>
+                            <div className={cn(
+                              "flex justify-end",
+                              isLong ? "text-sm" : "text-base"
+                            )}>
+                              {formattedValue}
+                            </div>
+                          </td>
+                        );
+                      }
+
+                      if (field.name === 'name' || field.name === 'description') {
+                        const text = String(value || '').slice(0, 90);
+                        // Split into lines of exactly 15 characters
+                        const lines = text.match(/.{1,15}/g) || [''];
+                        return (
+                          <td key={fieldIndex} className={classes}>
+                            <div className="break-all whitespace-pre-line leading-tight">
+                              {lines.join('\n')}
+                            </div>
+                          </td>
+                        );
+                      }
+
+                      return (
+                        <td key={fieldIndex} className={classes}>
+                          {value || ''}
+                        </td>
+                      );
+                    })}
                   </tr>
                 ))}
               </tbody>
@@ -546,16 +609,17 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
             <div className="w-1/3 space-y-4">
               <div className="flex justify-between text-lg py-2">
                 <span className="font-medium">Subtotal:</span>
-                <span>{formatCurrency(calculateSubtotal(), invoiceData.currency.code)}</span>
+                <span>{formatCurrency(calculateSubtotal(), invoiceData.currency.symbol)}</span>
               </div>
-              <div className="flex justify-between text-lg py-2">
-                <span className="font-medium">Tax ({invoiceData.tax || 0}%):</span>
-                <span>{formatCurrency(calculateTaxAmount(), invoiceData.currency.code)}</span>
-              </div>
-              <div className="h-px bg-gray-200 my-6"></div>
-              <div className="flex justify-between text-2xl font-bold py-2">
+              {invoiceData.tax > 0 && (
+                <div className="flex justify-between text-lg py-2">
+                  <span className="font-medium">Tax ({invoiceData.tax}%):</span>
+                  <span>{formatCurrency(calculateTaxAmount(), invoiceData.currency.symbol)}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-lg py-2 font-bold">
                 <span>Total:</span>
-                <span>{formatCurrency(calculateTotal(), invoiceData.currency.code)}</span>
+                <span>{formatCurrency(calculateTotal(), invoiceData.currency.symbol)}</span>
               </div>
             </div>
           </div>

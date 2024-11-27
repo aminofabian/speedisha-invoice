@@ -22,6 +22,7 @@ import { InvoicePreview } from './InvoicePreview'
 import { InvoiceStyleSelector, type InvoiceStyle } from './InvoiceStyleSelector'
 import { InvoiceBrandingSettings } from './InvoiceBrandingSettings'
 import { countriesData, defaultCountry, type CountryData } from '@/lib/countries-data'
+import { cn } from '@/lib/utils';
 
 export interface ItemField {
   id: string
@@ -71,8 +72,8 @@ const defaultFields: ItemField[] = [
   { id: 'name', name: 'name', label: 'Item Name', type: 'text', required: true, width: 3, enabled: true },
   { id: 'description', name: 'description', label: 'Description', type: 'text', required: false, width: 3, enabled: true },
   { id: 'quantity', name: 'quantity', label: 'Quantity', type: 'number', required: true, width: 2, enabled: true },
-  { id: 'price', name: 'price', label: 'Price', type: 'number', required: true, width: 2, enabled: true },
-  { id: 'amount', name: 'amount', label: 'Amount', type: 'number', required: true, width: 2, enabled: true },
+  { id: 'price', name: 'price', label: 'Price', type: 'currency', required: true, width: 2, enabled: true },
+  { id: 'amount', name: 'amount', label: 'Amount', type: 'currency', required: true, width: 2, enabled: true },
 ]
 
 const initialInvoiceData: InvoiceData = {
@@ -450,18 +451,76 @@ export function InvoiceCreator() {
                               {...provided.dragHandleProps}
                               className="bg-secondary/5 p-3 rounded-lg mb-3 group"
                             >
-                              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                              <div className="grid grid-cols-24 gap-2">
                                 {fields.filter(f => f.enabled).map(field => (
-                                  <div key={field.id}>
+                                  <div key={field.id} className={cn(
+                                    field.name === 'description' && 'col-span-24 lg:col-span-7',
+                                    field.name === 'name' && 'col-span-24 lg:col-span-6',
+                                    field.name === 'price' && 'col-span-8 lg:col-span-4',
+                                    field.name === 'quantity' && 'col-span-8 lg:col-span-3',
+                                    field.name === 'amount' && 'col-span-8 lg:col-span-4'
+                                  )}>
                                     <Label className="text-sm">{field.label}</Label>
-                                    <Input
-                                      type={field.type}
-                                      value={item[field.name] || ''}
-                                      onChange={(e) => updateItem(index, field.name, field.type === 'number' ? Number(e.target.value) : e.target.value)}
-                                      className={field.type === 'number' ? 'text-right' : ''}
-                                      min={field.type === 'number' ? '0' : undefined}
-                                      step={field.type === 'number' ? '0.01' : undefined}
-                                    />
+                                    {field.name === 'amount' ? (
+                                      <div className="relative">
+                                        <Input
+                                          type="text"
+                                          value={(item[field.name] || 0).toLocaleString(undefined, {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                          })}
+                                          readOnly
+                                          className={cn(
+                                            "text-right pr-2 pl-6 bg-muted",
+                                            ((item[field.name] || 0).toString().length > 8) && "text-sm"
+                                          )}
+                                        />
+                                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
+                                          {invoiceData.currency.symbol}
+                                        </span>
+                                      </div>
+                                    ) : field.type === 'currency' ? (
+                                      <div className="relative">
+                                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
+                                          {invoiceData.currency.symbol}
+                                        </span>
+                                        <Input
+                                          type="number"
+                                          value={item[field.name] || ''}
+                                          onChange={(e) => updateItem(index, field.name, Number(e.target.value))}
+                                          className={cn(
+                                            "text-right pr-2 pl-6",
+                                            (item[field.name]?.toString().length > 8) && "text-sm"
+                                          )}
+                                          min="0"
+                                          step="0.01"
+                                        />
+                                      </div>
+                                    ) : (
+                                      <Input
+                                        type={field.type}
+                                        value={item[field.name] || ''}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          if (field.name === 'name' || field.name === 'description') {
+                                            // Limit to 90 characters and wrap every 15
+                                            const limitedValue = value.slice(0, 90);
+                                            const lines = limitedValue.match(/.{1,15}/g) || [''];
+                                            updateItem(index, field.name, lines.join('\n'));
+                                          } else {
+                                            updateItem(index, field.name, field.type === 'number' ? Number(value) : value);
+                                          }
+                                        }}
+                                        className={cn(
+                                          (field.name === 'name' || field.name === 'description') && 'whitespace-pre-line break-all min-h-[40px] resize-none',
+                                          field.type === 'number' && cn(
+                                            'text-right pr-2',
+                                            (item[field.name]?.toString().length > 8) && 'text-sm'
+                                          )
+                                        )}
+                                        maxLength={field.name === 'name' || field.name === 'description' ? 90 : undefined}
+                                      />
+                                    )}
                                   </div>
                                 ))}
                                 {invoiceData.items.length > 1 && (
