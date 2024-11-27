@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Dialog,
   DialogContent,
@@ -498,12 +499,17 @@ export function InvoiceCreator() {
             {/* Notes */}
             <div>
               <Label>Notes</Label>
-              <textarea
-                className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
-                value={invoiceData.notes}
-                onChange={(e) => setInvoiceData(prev => ({ ...prev, notes: e.target.value }))}
-                placeholder="Additional notes or payment terms..."
-              />
+              <div className="space-y-2">
+                <Textarea
+                  value={invoiceData.notes}
+                  onChange={(e) => setInvoiceData(prev => ({ ...prev, notes: e.target.value }))}
+                  placeholder="Add notes here... Use *text* for bold, _text_ for italic, and \n for line break"
+                  className="min-h-[100px]"
+                />
+                <div className="text-sm text-muted-foreground">
+                  Formatting: *bold*, _italic_, \n for line break
+                </div>
+              </div>
             </div>
           </Card>
         </div>

@@ -380,6 +380,19 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
     window.URL.revokeObjectURL(url);
   };
 
+  const formatText = (text: string) => {
+    // Replace line breaks
+    let formattedText = text.replace(/\\n/g, '\n');
+    
+    // Replace bold text (*text*)
+    formattedText = formattedText.replace(/\*(.*?)\*/g, '<strong>$1</strong>');
+    
+    // Replace italic text (_text_)
+    formattedText = formattedText.replace(/_(.*?)_/g, '<em>$1</em>');
+    
+    return formattedText;
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
@@ -552,9 +565,12 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
         <div className="flex-none mt-auto">
           {/* Notes */}
           {invoiceData.notes && (
-            <div className="mb-16">
-              <div className="text-lg font-semibold text-gray-900 mb-4">Notes:</div>
-              <div className="text-lg leading-relaxed text-gray-600">{invoiceData.notes}</div>
+            <div className="mt-8" style={styles.notes}>
+              <h3 className="text-lg font-semibold mb-4">Notes:</h3>
+              <div 
+                className="text-gray-600 whitespace-pre-line"
+                dangerouslySetInnerHTML={{ __html: formatText(invoiceData.notes) }}
+              />
             </div>
           )}
 
