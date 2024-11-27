@@ -510,10 +510,10 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
           <div className="mb-20 -mx-6 overflow-x-auto">
             <table className="w-full table-fixed border-separate border-spacing-0">
               <colgroup>
-                <col style={{ width: '24%' }} /> {/* name */}
-                <col style={{ width: '26%' }} /> {/* description */}
-                <col style={{ width: '16%' }} /> {/* price */}
-                <col style={{ width: '14%' }} /> {/* quantity */}
+                <col style={{ width: '22%' }} /> {/* name */}
+                <col style={{ width: '28%' }} /> {/* description */}
+                <col style={{ width: '17%' }} /> {/* price */}
+                <col style={{ width: '13%' }} /> {/* quantity */}
                 <col style={{ width: '20%' }} /> {/* amount */}
               </colgroup>
               <thead>
@@ -524,9 +524,6 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
                       className={getTableHeaderClasses()}
                       style={{
                         ...styles.tableHeader,
-                        padding: '1rem',
-                        paddingRight: field.type === 'number' || field.type === 'currency' ? '0.75rem' : '1rem',
-                        paddingLeft: field.type === 'number' || field.type === 'currency' ? '0.5rem' : '1rem',
                         textAlign: field.type === 'number' || field.type === 'currency' ? 'right' : 'left'
                       }}
                     >
@@ -541,9 +538,9 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
                     {fields.map((field, fieldIndex) => {
                       const value = item[field.name];
                       const classes = cn(
-                        "py-4",
-                        (field.type === 'number' || field.type === 'currency') && "text-right pr-2",
-                        (field.name === 'name' || field.name === 'description') && "px-4 align-top"
+                        "py-3 align-top",
+                        (field.type === 'number' || field.type === 'currency') && "text-right pr-4",
+                        (field.name === 'name' || field.name === 'description') && "px-4 whitespace-pre-line"
                       );
 
                       if (field.type === 'currency') {
@@ -553,7 +550,7 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
                         return (
                           <td key={fieldIndex} className={classes}>
                             <div className={cn(
-                              "flex justify-end items-center gap-0.5",
+                              "flex justify-end items-center gap-1",
                               isLong ? "text-sm" : "text-base"
                             )}>
                               <span className="text-gray-500 text-sm">{invoiceData.currency.symbol}</span>
@@ -563,29 +560,12 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
                         );
                       }
 
-                      if (field.type === 'number') {
-                        const numValue = typeof value === 'string' ? parseFloat(value) : (value as number);
-                        const formattedValue = (numValue || 0).toLocaleString();
-                        const isLong = formattedValue.length > 8;
-                        return (
-                          <td key={fieldIndex} className={classes}>
-                            <div className={cn(
-                              "flex justify-end",
-                              isLong ? "text-sm" : "text-base"
-                            )}>
-                              {formattedValue}
-                            </div>
-                          </td>
-                        );
-                      }
-
                       if (field.name === 'name' || field.name === 'description') {
                         const text = String(value || '').slice(0, 90);
-                        // Split into lines of exactly 15 characters
                         const lines = text.match(/.{1,15}/g) || [''];
                         return (
                           <td key={fieldIndex} className={classes}>
-                            <div className="break-all whitespace-pre-line leading-tight">
+                            <div className="break-all leading-snug text-base">
                               {lines.join('\n')}
                             </div>
                           </td>
