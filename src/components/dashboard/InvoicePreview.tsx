@@ -58,7 +58,7 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
 
   const getStyleClasses = () => {
     // A4 dimensions in pixels at 96 DPI: 794 x 1123
-    const baseClasses = 'p-16 bg-white shadow-lg mx-auto w-[21cm] min-h-[29.7cm] flex flex-col'
+    const baseClasses = 'p-16 bg-white shadow-xl mx-auto w-[21cm] min-h-[29.7cm] flex flex-col rounded-lg print:shadow-none'
 
     switch (style) {
       case 'basic':
@@ -73,26 +73,26 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
   const getHeaderClasses = () => {
     switch (style) {
       case 'basic':
-        return 'mb-20'
+        return 'mb-16'
       case 'styled':
-        return 'mb-20 py-8 bg-gray-50'
+        return 'mb-16 py-8 bg-gray-50 rounded-lg'
       case 'uber-styled':
-        return cn('mb-20 py-8')
+        return cn('mb-16 py-8 rounded-lg')
       default:
-        return 'mb-20'
+        return 'mb-16'
     }
   };
 
   const getTableHeaderClasses = () => {
-    const baseClasses = 'px-8 py-5 text-left font-semibold tracking-wider'
+    const baseClasses = 'px-6 py-4 text-left font-semibold tracking-wider text-sm uppercase'
 
     switch (style) {
       case 'basic':
-        return cn(baseClasses, 'bg-gray-100')
+        return cn(baseClasses, 'bg-gray-100 first:rounded-tl-lg last:rounded-tr-lg')
       case 'styled':
-        return cn(baseClasses, 'bg-gray-50')
+        return cn(baseClasses, 'bg-gray-50 border-b-2 border-gray-200')
       case 'uber-styled':
-        return cn(baseClasses)
+        return cn(baseClasses, 'border-b-2')
       default:
         return baseClasses
     }
@@ -425,7 +425,7 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
       <div ref={invoiceRef} className={getStyleClasses()} style={{
         ...styles.container,
         margin: '0 auto',
-        padding: '4rem',
+        padding: '3rem',
         boxSizing: 'border-box',
         minHeight: '29.7cm',
       }}>
@@ -433,12 +433,12 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
         <div className="flex-none">
           <div className={getHeaderClasses()} style={{
             ...styles.header,
-            marginBottom: '5rem',
+            marginBottom: '4rem',
           }}>
-            <div className="flex justify-between items-start">
+            <div className="flex justify-between items-start gap-8">
               <div className="flex-1">
                 {invoiceData.companyLogo ? (
-                  <div className="w-64 h-32 relative">
+                  <div className="w-48 h-24 relative">
                     <Image
                       src={invoiceData.companyLogo}
                       alt="Company Logo"
@@ -448,26 +448,26 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
                     />
                   </div>
                 ) : (
-                  <h1 className="text-3xl font-bold" style={styles.title}>
+                  <h1 className="text-3xl font-bold tracking-tight" style={styles.title}>
                     {invoiceData.companyName}
                   </h1>
                 )}
               </div>
 
-              <div className="text-right space-y-8">
-                <h2 className="text-4xl font-bold tracking-wide" style={styles.title}>INVOICE</h2>
-                <div className="space-y-4 text-lg">
-                  <div>
-                    <span className="font-medium">Invoice Number: </span>
-                    <span className="ml-2">{invoiceData.invoiceNumber}</span>
+              <div className="text-right space-y-6">
+                <h2 className="text-4xl font-bold tracking-tight" style={styles.title}>INVOICE</h2>
+                <div className="space-y-3 text-base">
+                  <div className="grid grid-cols-2 gap-3">
+                    <span className="font-medium text-gray-600 text-right">Invoice Number:</span>
+                    <span className="text-left">{invoiceData.invoiceNumber}</span>
                   </div>
-                  <div>
-                    <span className="font-medium">Date: </span>
-                    <span className="ml-2">{invoiceData.date}</span>
+                  <div className="grid grid-cols-2 gap-3">
+                    <span className="font-medium text-gray-600 text-right">Date:</span>
+                    <span className="text-left">{invoiceData.date}</span>
                   </div>
-                  <div>
-                    <span className="font-medium">Due Date: </span>
-                    <span className="ml-2">{invoiceData.dueDate}</span>
+                  <div className="grid grid-cols-2 gap-3">
+                    <span className="font-medium text-gray-600 text-right">Due Date:</span>
+                    <span className="text-left">{invoiceData.dueDate}</span>
                   </div>
                 </div>
               </div>
@@ -477,15 +477,15 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
 
         {/* Content Section */}
         <div className="flex-1">
-          <div className="grid grid-cols-2 gap-20 mb-20">
+          <div className="grid grid-cols-2 gap-16 mb-16">
             {/* From Section */}
-            <div className="space-y-3">
-              <div className="text-lg font-semibold mb-6" style={style === 'uber-styled' ? { color: invoiceData.colorScheme.primary } : {}}>
+            <div className="space-y-4 p-6 bg-gray-50 rounded-lg">
+              <div className="text-base font-semibold" style={style === 'uber-styled' ? { color: invoiceData.colorScheme.primary } : {}}>
                 From:
               </div>
-              <div className="text-lg">
-                <div className="font-medium">{invoiceData.companyName}</div>
-                <div className="text-gray-600 mt-4 leading-relaxed">
+              <div>
+                <div className="font-medium text-lg">{invoiceData.companyName}</div>
+                <div className="text-gray-600 mt-3 leading-relaxed text-sm">
                   123 Business Street<br />
                   City, State 12345<br />
                   contact@company.com
@@ -494,26 +494,26 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
             </div>
 
             {/* Bill To Section */}
-            <div className="space-y-3">
-              <div className="text-lg font-semibold mb-6" style={style === 'uber-styled' ? { color: invoiceData.colorScheme.primary } : {}}>
+            <div className="space-y-4 p-6 bg-gray-50 rounded-lg">
+              <div className="text-base font-semibold" style={style === 'uber-styled' ? { color: invoiceData.colorScheme.primary } : {}}>
                 Bill To:
               </div>
-              <div className="text-lg">
-                <div className="font-medium">{invoiceData.billTo.name}</div>
-                <div className="text-gray-600 mt-4 leading-relaxed whitespace-pre-line">{invoiceData.billTo.address}</div>
-                <div className="text-gray-600 mt-4">{invoiceData.billTo.email}</div>
+              <div>
+                <div className="font-medium text-lg">{invoiceData.billTo.name}</div>
+                <div className="text-gray-600 mt-3 leading-relaxed whitespace-pre-line text-sm">{invoiceData.billTo.address}</div>
+                <div className="text-gray-600 mt-3 text-sm">{invoiceData.billTo.email}</div>
               </div>
             </div>
           </div>
 
           {/* Items Table */}
-          <div className="mb-20 -mx-6 overflow-x-auto">
+          <div className="mb-16 overflow-hidden rounded-lg border border-gray-200">
             <table className="w-full table-fixed border-separate border-spacing-0">
               <colgroup>
-                <col style={{ width: '22%' }} /> {/* name */}
-                <col style={{ width: '28%' }} /> {/* description */}
-                <col style={{ width: '17%' }} /> {/* price */}
-                <col style={{ width: '13%' }} /> {/* quantity */}
+                <col style={{ width: '18%' }} /> {/* name */}
+                <col style={{ width: '27%' }} /> {/* description */}
+                <col style={{ width: '20%' }} /> {/* price */}
+                <col style={{ width: '15%' }} /> {/* quantity */}
                 <col style={{ width: '20%' }} /> {/* amount */}
               </colgroup>
               <thead>
@@ -524,7 +524,9 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
                       className={getTableHeaderClasses()}
                       style={{
                         ...styles.tableHeader,
-                        textAlign: field.type === 'number' || field.type === 'currency' ? 'right' : 'left'
+                        textAlign: field.type === 'number' || field.type === 'currency' ? 'right' : 'left',
+                        paddingLeft: field.name === 'description' ? '8px' : '12px',
+                        paddingRight: field.type === 'number' || field.type === 'currency' ? '12px' : '8px'
                       }}
                     >
                       {field.label}
@@ -532,28 +534,31 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
                   ))}
                 </tr>
               </thead>
-              <tbody className="text-lg">
+              <tbody className="text-sm">
                 {invoiceData.items.map((item, index) => (
-                  <tr key={item.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                  <tr key={item.id} className={cn(
+                    index % 2 === 0 ? 'bg-white' : 'bg-gray-50',
+                    'transition-colors hover:bg-gray-100'
+                  )}>
                     {fields.map((field, fieldIndex) => {
                       const value = item[field.name];
                       const classes = cn(
-                        "py-3 align-top",
-                        (field.type === 'number' || field.type === 'currency') && "text-right pr-4",
-                        (field.name === 'name' || field.name === 'description') && "px-4 whitespace-pre-line"
+                        "py-4 align-top",
+                        field.name === 'name' && "px-12",
+                        field.name === 'description' && "px-8",
+                        (field.type === 'number' || field.type === 'currency') && "text-right",
+                        field.name === 'quantity' && "px-12",
+                        field.name === 'price' && "px-12",
+                        field.name === 'amount' && "px-12"
                       );
 
                       if (field.type === 'currency') {
                         const numValue = typeof value === 'string' ? parseFloat(value) : (value as number);
                         const formattedValue = formatCurrency(numValue || 0, '');
-                        const isLong = formattedValue.length > 8;
                         return (
                           <td key={fieldIndex} className={classes}>
-                            <div className={cn(
-                              "flex justify-end items-center gap-1",
-                              isLong ? "text-sm" : "text-base"
-                            )}>
-                              <span className="text-gray-500 text-sm">{invoiceData.currency.symbol}</span>
+                            <div className="flex justify-end items-center gap-1 font-medium">
+                              <span className="text-gray-500 text-xs">{invoiceData.currency.symbol}</span>
                               {formattedValue}
                             </div>
                           </td>
@@ -561,12 +566,10 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
                       }
 
                       if (field.name === 'name' || field.name === 'description') {
-                        const text = String(value || '').slice(0, 90);
-                        const lines = text.match(/.{1,15}/g) || [''];
                         return (
                           <td key={fieldIndex} className={classes}>
-                            <div className="break-all leading-snug text-base">
-                              {lines.join('\n')}
+                            <div className="leading-relaxed">
+                              {String(value || '')}
                             </div>
                           </td>
                         );
@@ -585,21 +588,21 @@ export function InvoicePreview({ invoiceData, fields, style }: InvoicePreviewPro
           </div>
 
           {/* Total Section */}
-          <div className="flex justify-end mb-20">
-            <div className="w-1/3 space-y-4">
-              <div className="flex justify-between text-lg py-2">
-                <span className="font-medium">Subtotal:</span>
-                <span>{formatCurrency(calculateSubtotal(), invoiceData.currency.symbol)}</span>
+          <div className="flex justify-end mb-16">
+            <div className="w-1/3 space-y-3 p-6 bg-gray-50 rounded-lg">
+              <div className="flex justify-between items-center py-2 text-sm">
+                <span className="font-medium text-gray-600">Subtotal:</span>
+                <span className="font-medium">{formatCurrency(calculateSubtotal(), invoiceData.currency.symbol)}</span>
               </div>
               {invoiceData.tax > 0 && (
-                <div className="flex justify-between text-lg py-2">
-                  <span className="font-medium">Tax ({invoiceData.tax}%):</span>
-                  <span>{formatCurrency(calculateTaxAmount(), invoiceData.currency.symbol)}</span>
+                <div className="flex justify-between items-center py-2 text-sm">
+                  <span className="font-medium text-gray-600">Tax ({invoiceData.tax}%):</span>
+                  <span className="font-medium">{formatCurrency(calculateTaxAmount(), invoiceData.currency.symbol)}</span>
                 </div>
               )}
-              <div className="flex justify-between text-lg py-2 font-bold">
-                <span>Total:</span>
-                <span>{formatCurrency(calculateTotal(), invoiceData.currency.symbol)}</span>
+              <div className="flex justify-between items-center py-3 text-lg border-t border-gray-200 mt-3">
+                <span className="font-semibold">Total:</span>
+                <span className="font-semibold">{formatCurrency(calculateTotal(), invoiceData.currency.symbol)}</span>
               </div>
             </div>
           </div>
